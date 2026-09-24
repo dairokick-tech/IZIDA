@@ -1,22 +1,28 @@
-# IZIDA — Sistema completo
+# IZIDA — Billetera digital independiente
 
-**Cliente:** billetera IZIDA en PEN, transferencias, cobros/pagos QR preparados, movimientos, créditos en PEN, inversiones PEN/USD y campañas.
+## Acceso administrador
+Usuario: `admin`
+Contraseña: `IZIDA2026`
 
-**Administrador:** dashboard, clientes, billeteras, créditos, campañas, inversiones, perfil de riesgo e integraciones.
+## Ejecutar
+Windows: doble clic en `INICIAR_WINDOWS.bat`.
+Manual:
+```bash
+cd backend
+pip install -r requirements.txt
+uvicorn main:app --host 0.0.0.0 --port 8000
+```
 
-### Monedas
-- Billetera: PEN (S/)
-- Créditos: PEN (S/)
-- Inversiones: PEN (S/) y USD (US$)
+## URLs
+Cliente: http://127.0.0.1:8000/cliente
+Administrador: http://127.0.0.1:8000/admin
+API: http://127.0.0.1:8000/docs
 
-### Ejecutar
-1. `cd backend`
-2. `pip install -r requirements.txt`
-3. `uvicorn main:app --reload`
-4. Abrir `cliente/index.html` y `admin/index.html`.
+## Flujo conectado
+Cliente se registra -> obtiene billetera PEN -> abono/retiro interno -> envía/paga a otro usuario IZIDA -> movimientos y referencias quedan registrados -> administrador ve clientes, billeteras y movimientos.
+Administrador crea crédito -> calcula total/cuota -> aprueba -> desembolsa a la billetera -> cliente paga desde su saldo -> saldo pendiente se actualiza.
+Administrador crea campañas -> cliente elegible por saldo las ve.
+Cliente crea inversiones PEN/USD -> administrador las ve.
+Auditoría registra acciones.
 
-API: `http://localhost:8000`
-Docs: `http://localhost:8000/docs`
-
-### Producción
-Esta entrega es una base funcional. Para operar dinero real se deben añadir autenticación segura, hash de PIN, MFA, KYC/AML, protección de datos, límites, conciliación, auditoría y las integraciones oficiales necesarias. SBS/Sentinel, CrediCorp e InterCorp no llevan credenciales ni endpoints inventados; se conectan cuando existan mecanismos oficiales autorizados.
+No existen integraciones externas en esta versión. No usa Yape, Plin, bancos, SBS, Sentinel ni APIs de terceros. Las operaciones de abono/retiro son internas del sistema y no representan movimiento bancario real.

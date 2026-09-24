@@ -1,0 +1,2 @@
+CLIENTE: billetera PEN + créditos PEN + inversiones PEN/USD.
+ADMIN: operación, créditos, campañas, inversiones, riesgo, integraciones.

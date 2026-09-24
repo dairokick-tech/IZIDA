@@ -1,28 +1,17 @@
-# IZIDA — Billetera digital independiente
+# IZIDA — versión GitHub Pages
 
-## Acceso administrador
+Esta versión funciona como sitio estático: no usa FastAPI, SQLite ni APIs externas.
+
+## Publicación
+1. Copia `index.html` a la raíz del repositorio de GitHub Pages.
+2. En GitHub: Settings → Pages → Deploy from a branch → selecciona la rama y `/ (root)`.
+3. Espera la publicación y abre la URL del repositorio.
+
+## Administrador
 Usuario: `admin`
 Contraseña: `IZIDA2026`
 
-## Ejecutar
-Windows: doble clic en `INICIAR_WINDOWS.bat`.
-Manual:
-```bash
-cd backend
-pip install -r requirements.txt
-uvicorn main:app --host 0.0.0.0 --port 8000
-```
+## Importante
+Los datos se guardan en `localStorage` del navegador. Por tanto, esta versión es para demostración/uso local y NO es una base de datos central compartida entre teléfonos. Los abonos y retiros son registros internos, no movimientos bancarios reales.
 
-## URLs
-Cliente: http://127.0.0.1:8000/cliente
-Administrador: http://127.0.0.1:8000/admin
-API: http://127.0.0.1:8000/docs
-
-## Flujo conectado
-Cliente se registra -> obtiene billetera PEN -> abono/retiro interno -> envía/paga a otro usuario IZIDA -> movimientos y referencias quedan registrados -> administrador ve clientes, billeteras y movimientos.
-Administrador crea crédito -> calcula total/cuota -> aprueba -> desembolsa a la billetera -> cliente paga desde su saldo -> saldo pendiente se actualiza.
-Administrador crea campañas -> cliente elegible por saldo las ve.
-Cliente crea inversiones PEN/USD -> administrador las ve.
-Auditoría registra acciones.
-
-No existen integraciones externas en esta versión. No usa Yape, Plin, bancos, SBS, Sentinel ni APIs de terceros. Las operaciones de abono/retiro son internas del sistema y no representan movimiento bancario real.
+Para una billetera real con datos centralizados se necesita un backend/base de datos y controles de seguridad apropiados.

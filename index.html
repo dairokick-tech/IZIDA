@@ -1,24 +1,232 @@
-<!doctype html><html lang=es><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><title>IZIDA Cliente</title>
-<style>*{box-sizing:border-box}body{margin:0;font-family:Arial;background:#f5f2fb;color:#17132a}.app{max-width:480px;margin:auto;background:#fff;min-height:100vh}.hero{background:linear-gradient(135deg,#5c2cdf,#8d56ef);color:#fff;padding:24px;border-radius:0 0 28px 28px}.logo{font-size:28px;font-weight:800}.bal{font-size:38px;font-weight:800;margin:18px 0}.content{padding:16px}.card{background:#fff;border:1px solid #eee5fa;border-radius:18px;padding:16px;margin-bottom:14px}.input{width:100%;padding:12px;border:1px solid #ddd5e9;border-radius:11px;margin:5px 0}.btn{padding:12px;border:0;border-radius:11px;background:#6332df;color:white;font-weight:700;cursor:pointer}.wide{width:100%;margin-top:7px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.item{padding:11px 0;border-bottom:1px solid #eee}.hide{display:none}.danger{color:#b22}.small{font-size:12px;color:#777}.pill{display:inline-block;padding:5px 8px;border-radius:20px;background:#eee7ff;color:#5630c8;font-size:12px}</style>
-<div class=app><div id=login class=content><div class=card><div class=logo>IZIDA</div><h2>Mi billetera</h2><input id=u class=input placeholder=Usuario><input id=p class=input type=password placeholder=Contraseña><button class="btn wide" onclick=login()>Ingresar</button><p id=err class=danger></p><hr><h3>Crear cuenta IZIDA</h3><input id=n class=input placeholder="Nombre completo"><input id=d class=input placeholder="Documento"><input id=t class=input placeholder="Teléfono"><input id=em class=input placeholder="Correo"><input id=nu class=input placeholder="Usuario"><input id=np class=input type=password placeholder="Contraseña"><button class="btn wide" onclick=register()>Crear cuenta</button><p id=regmsg></p></div></div>
-<div id=main class=hide><div class=hero><div class=logo>IZIDA</div><div id=hello></div><div id=balance class=bal>S/ 0.00</div><div>Saldo disponible · PEN</div><div class=actions><button class=btn onclick=abono()>Abonar</button><button class=btn onclick=retirar()>Retirar</button><button class=btn onclick=enviar()>Enviar</button><button class=btn onclick=pagar()>Pagar</button></div></div><div class=content>
-<div class=card><div style="display:flex;justify-content:space-between"><h3>Actividad</h3><button class=btn onclick=load()>↻</button></div><div id=mov></div></div>
-<div class=card><h3>Mis créditos</h3><div id=credits></div><button class="btn wide" onclick=pagarCredito()>Pagar cuota</button></div>
-<div class=card><h3>Mis inversiones</h3><div id=investments></div><button class="btn wide" onclick=invierte()>Nueva inversión</button></div>
-<div class=card><h3>Ofertas IZIDA</h3><div id=campaigns></div></div>
-<button class="btn wide" onclick=logout()>Cerrar sesión</button></div></div></div>
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>IZIDA | Billetera Digital</title>
+<meta name="theme-color" content="#6d28d9">
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#f5f3ff;color:#171329}
+button,input,select{font:inherit}button{cursor:pointer;border:0}.wrap{max-width:1050px;margin:auto;padding:18px}
+header{background:#fff;border-bottom:1px solid #e8e4f4;position:sticky;top:0;z-index:5}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:12px}.brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:24px;color:#5b21b6}.logo{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;display:grid;place-items:center;font-weight:900}
+.card{background:#fff;border:1px solid #e7e2f3;border-radius:20px;padding:20px;box-shadow:0 8px 25px rgba(38,18,83,.06);margin:14px 0}.hero{padding:30px 0}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+h1{font-size:34px;margin:8px 0}h2{margin:0 0 12px}h3{margin:8px 0}.muted{color:#6b647a}.small{font-size:13px}.hidden{display:none!important}
+input,select{width:100%;padding:14px;border:1px solid #ddd6ee;border-radius:14px;outline:none;background:#fff;margin:6px 0 10px}input:focus,select:focus{border-color:#7c3aed;box-shadow:0 0 0 3px #ede9fe}
+.btn{padding:13px 16px;border-radius:13px;font-weight:800}.primary{background:#6d28d9;color:#fff}.secondary{background:#ede9fe;color:#5b21b6}.danger{background:#fee2e2;color:#991b1b}.ghost{background:#fff;border:1px solid #ddd6ee;color:#33294a}
+.actions{display:flex;flex-wrap:wrap;gap:9px}.balance{background:linear-gradient(135deg,#5b21b6,#7c3aed);color:#fff;border-radius:22px;padding:24px}.balance strong{font-size:36px;display:block;margin-top:8px}
+.msg{padding:12px;border-radius:12px;margin:10px 0;background:#f3f4f6}.ok{background:#dcfce7;color:#166534}.err{background:#fee2e2;color:#991b1b}
+.tabs{display:flex;gap:8px;margin:12px 0;overflow:auto}.tab{white-space:nowrap;padding:10px 13px;border-radius:12px;background:#eee9fa;color:#4c3b69;font-weight:700}.tab.active{background:#6d28d9;color:#fff}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;border-bottom:1px solid #eee8f5;font-size:14px}.pill{display:inline-block;padding:5px 9px;border-radius:999px;background:#ede9fe;color:#5b21b6;font-size:12px;font-weight:800}
+footer{padding:30px 0 60px;color:#766e87;text-align:center}.topline{display:flex;justify-content:space-between;align-items:center;gap:10px}
+@media(max-width:720px){.grid,.grid3{grid-template-columns:1fr}.wrap{padding:14px}h1{font-size:28px}.card{padding:16px}.balance strong{font-size:31px}}
+</style>
+</head>
+<body>
+<header><div class="wrap nav">
+  <div class="brand"><div class="logo">IZ</div> IZIDA</div>
+  <button class="btn ghost" id="adminBtn">Administrador</button>
+</div></header>
+
+<main class="wrap">
+<section id="auth">
+  <div class="hero">
+    <h1>Mi billetera</h1>
+    <p class="muted">Billetera digital IZIDA · PEN</p>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <h2>Ingresar</h2>
+      <div id="loginMsg"></div>
+      <label>Usuario</label><input id="loginUser" autocomplete="username">
+      <label>Contraseña</label><input id="loginPass" type="password" autocomplete="current-password">
+      <button class="btn primary" style="width:100%" onclick="login()">Ingresar</button>
+    </div>
+    <div class="card">
+      <h2>Crear cuenta IZIDA</h2>
+      <div id="regMsg"></div>
+      <input id="regName" placeholder="Nombre completo">
+      <input id="regDoc" placeholder="Documento">
+      <input id="regPhone" placeholder="Teléfono">
+      <input id="regEmail" type="email" placeholder="Correo electrónico">
+      <input id="regUser" placeholder="Usuario">
+      <input id="regPass" type="password" placeholder="Contraseña">
+      <button class="btn primary" style="width:100%" onclick="register()">Crear cuenta</button>
+    </div>
+  </div>
+</section>
+
+<section id="client" class="hidden">
+  <div class="topline"><div><h1>Hola, <span id="clientName"></span></h1><div class="muted" id="clientUser"></div></div><button class="btn ghost" onclick="logout()">Salir</button></div>
+  <div class="balance"><span>Saldo disponible</span><strong id="balance">S/ 0.00</strong><span class="small">Billetera IZIDA · soles</span></div>
+  <div class="actions" style="margin:14px 0">
+    <button class="btn primary" onclick="openAction('deposit')">Abonar</button>
+    <button class="btn secondary" onclick="openAction('withdraw')">Retirar</button>
+    <button class="btn secondary" onclick="openAction('transfer')">Enviar</button>
+    <button class="btn secondary" onclick="openAction('pay')">Pagar</button>
+    <button class="btn secondary" onclick="openAction('creditPay')">Pagar crédito</button>
+    <button class="btn secondary" onclick="openAction('invest')">Invertir</button>
+  </div>
+  <div id="clientMsg"></div>
+  <div id="actionBox" class="card hidden"></div>
+  <div class="grid">
+    <div class="card"><div class="topline"><h2>Actividad</h2><span class="pill" id="movCount">0</span></div><div id="movements"></div></div>
+    <div class="card"><h2>Mi información</h2><p><b>Nombre:</b> <span id="pName"></span></p><p><b>Documento:</b> <span id="pDoc"></span></p><p><b>Teléfono:</b> <span id="pPhone"></span></p><p><b>Correo:</b> <span id="pEmail"></span></p><p><b>Usuario:</b> <span id="pUser"></span></p></div>
+  </div>
+  <div class="grid">
+    <div class="card"><h2>Créditos</h2><div id="credits"></div></div>
+    <div class="card"><h2>Inversiones</h2><div id="investments"></div></div>
+  </div>
+  <div class="card"><h2>Campañas disponibles</h2><div id="campaigns"></div></div>
+</section>
+
+<section id="admin" class="hidden">
+  <div class="topline"><div><h1>Panel administrador</h1><p class="muted">IZIDA · operación interna</p></div><button class="btn ghost" onclick="logout()">Salir</button></div>
+  <div class="card">
+    <h2>Acceso administrador</h2>
+    <div id="adminLoginMsg"></div>
+    <input id="adminUser" value="admin" placeholder="Usuario">
+    <input id="adminPass" type="password" placeholder="Contraseña">
+    <button class="btn primary" onclick="adminLogin()">Ingresar</button>
+  </div>
+  <div id="adminPanel" class="hidden">
+    <div class="grid3">
+      <div class="card"><span class="muted">Clientes</span><h2 id="mClients">0</h2></div>
+      <div class="card"><span class="muted">Saldo PEN</span><h2 id="mBalance">S/ 0.00</h2></div>
+      <div class="card"><span class="muted">Movimientos</span><h2 id="mMovs">0</h2></div>
+    </div>
+    <div class="tabs">
+      <button class="tab active" onclick="showAdminTab('dash',this)">Dashboard</button>
+      <button class="tab" onclick="showAdminTab('clients',this)">Clientes</button>
+      <button class="tab" onclick="showAdminTab('movs',this)">Movimientos</button>
+      <button class="tab" onclick="showAdminTab('credits',this)">Créditos</button>
+      <button class="tab" onclick="showAdminTab('campaigns',this)">Campañas</button>
+      <button class="tab" onclick="showAdminTab('invest',this)">Inversiones</button>
+      <button class="tab" onclick="showAdminTab('audit',this)">Auditoría</button>
+    </div>
+    <div id="adminContent" class="card"></div>
+  </div>
+</section>
+</main>
+<footer>IZIDA · Sistema independiente para demostración. Los abonos/retiros son registros internos y no mueven dinero bancario real.</footer>
+
 <script>
-const API=location.origin+"/api";let T=localStorage.izida_client_token||"";
-async function api(p,o={}){o.headers={...(o.headers||{}),...(T?{Authorization:"Bearer "+T}:{})};if(o.body)o.headers["Content-Type"]="application/json";let r=await fetch(API+p,o),j=await r.json().catch(()=>({detail:"Error"}));if(!r.ok)throw Error(j.detail||"Error");return j}
-async function login(){try{let j=await api("/client/login",{method:"POST",body:JSON.stringify({username:u.value,password:p.value})});T=j.token;localStorage.izida_client_token=T;show();load()}catch(x){err.textContent=x.message}}
-async function register(){try{await api("/client/register",{method:"POST",body:JSON.stringify({name:n.value,document:d.value,phone:t.value,email:em.value,username:nu.value,password:np.value})});regmsg.textContent="Cuenta creada. Ya puedes ingresar."}catch(x){regmsg.textContent=x.message}}
-function show(){login.classList.add("hide");main.classList.remove("hide")}
-async function load(){try{let j=await api("/client/home");hello.textContent="Hola, "+j.client.name;balance.textContent="S/ "+(+j.wallet.balance).toFixed(2);mov.innerHTML=j.movements.map(x=>`<div class=item><b>${x.type}</b><span style=float:right>${(+x.amount).toFixed(2)}</span><div class=small>${x.description||""} · ${x.created_at}<br>Ref: ${x.reference||""}</div></div>`).join("")||"Sin movimientos";credits.innerHTML=j.credits.map(x=>`<div class=item><b>Crédito #${x.id}</b><br>S/ ${(+x.amount).toFixed(2)} · ${x.status}<br><span class=small>Saldo pendiente: S/ ${(+x.remaining).toFixed(2)} · Cuota: S/ ${(+x.installment).toFixed(2)}</span></div>`).join("")||"Sin créditos";investments.innerHTML=j.investments.map(x=>`<div class=item><b>${x.currency} ${(+x.amount).toFixed(2)}</b><br><span class=small>${x.status} · Vence ${x.maturity_date}</span></div>`).join("")||"Sin inversiones";campaigns.innerHTML=j.campaigns.map(x=>`<div class=item><span class=pill>${x.rate}%</span> <b>${x.name}</b><br>${x.description}</div>`).join("")||"Sin ofertas disponibles"}catch(x){logout()}}
-async function abono(){let a=prompt("Monto de abono en PEN");if(a)try{let j=await api("/client/deposit",{method:"POST",body:JSON.stringify({amount:+a,description:"Abono IZIDA"})});alert("Operación: "+j.reference);load()}catch(x){alert(x.message)}}
-async function retirar(){let a=prompt("Monto a retirar en PEN");if(a)try{let j=await api("/client/withdraw",{method:"POST",body:JSON.stringify({amount:+a,description:"Retiro IZIDA"})});alert("Operación: "+j.reference);load()}catch(x){alert(x.message)}}
-async function enviar(){let d=prompt("Usuario IZIDA destinatario"),a=prompt("Monto PEN");if(d&&a)try{let j=await api("/client/transfer",{method:"POST",body:JSON.stringify({destination_username:d,amount:+a,description:"Transferencia IZIDA"})});alert("Transferencia: "+j.reference);load()}catch(x){alert(x.message)}}
-async function pagar(){let d=prompt("Usuario IZIDA a quien pagar"),a=prompt("Monto PEN"),c=prompt("Concepto","Pago IZIDA");if(d&&a)try{let j=await api("/client/pay",{method:"POST",body:JSON.stringify({destination_username:d,amount:+a,concept:c})});alert("Pago: "+j.reference);load()}catch(x){alert(x.message)}}
-async function pagarCredito(){let a=prompt("Monto de pago PEN");if(a)try{let j=await api("/client/credit-payment",{method:"POST",body:JSON.stringify({amount:+a})});alert("Pago registrado. Pendiente: S/ "+j.remaining);load()}catch(x){alert(x.message)}}
-async function invierte(){let a=prompt("Monto"),c=(prompt("Moneda: PEN o USD","PEN")||"").toUpperCase(),r=prompt("Tasa anual %","0"),days=prompt("Plazo en días","30");if(a&&c)try{await api("/client/investment",{method:"POST",body:JSON.stringify({amount:+a,currency:c,rate:+r,term_days:+days})});load()}catch(x){alert(x.message)}}
-async function logout(){await api("/logout",{method:"POST"}).catch(()=>{});localStorage.removeItem("izida_client_token");location.reload()}if(T){show();load()}
+const KEY='izida_static_v2';
+const ADMIN_USER='admin', ADMIN_PASS='IZIDA2026';
+let db=JSON.parse(localStorage.getItem(KEY)||'null');
+if(!db){db={clients:[],movements:[],credits:[],creditPayments:[],campaigns:[],investments:[],audit:[],nextId:1};save()}
+let current=null;
+
+function save(){localStorage.setItem(KEY,JSON.stringify(db))}
+function id(){return db.nextId++}
+function money(n,c='PEN'){return (c==='USD'?'US$ ':'S/ ')+Number(n||0).toFixed(2)}
+function msg(el,text,ok=false){document.getElementById(el).innerHTML='<div class="msg '+(ok?'ok':'err')+'">'+esc(text)+'</div>'}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function client(){return db.clients.find(x=>x.id===current)}
+function log(type,detail){db.audit.unshift({id:id(),at:new Date().toLocaleString('es-PE'),type,detail});save()}
+
+function register(){
+ const name=regName.value.trim(),doc=regDoc.value.trim(),phone=regPhone.value.trim(),email=regEmail.value.trim(),user=regUser.value.trim().toLowerCase(),pass=regPass.value;
+ if(!name||!doc||!phone||!email||!user||!pass)return msg('regMsg','Completa todos los campos.');
+ if(db.clients.some(x=>x.username===user))return msg('regMsg','Ese usuario ya existe.');
+ const c={id:id(),name,doc,phone,email,username:user,password:pass,balance:0,created:new Date().toLocaleString('es-PE')};
+ db.clients.push(c);save();log('Registro','Nuevo cliente '+user);msg('regMsg','Cuenta creada correctamente. Ya puedes ingresar.',true);
+ ['regName','regDoc','regPhone','regEmail','regUser','regPass'].forEach(x=>document.getElementById(x).value='')
+}
+function login(){
+ const u=loginUser.value.trim().toLowerCase(),p=loginPass.value;
+ const c=db.clients.find(x=>x.username===u&&x.password===p);
+ if(!c)return msg('loginMsg','Usuario o contraseña incorrectos.');
+ current=c.id;log('Login cliente',u);show('client');refreshClient();
+}
+function adminLogin(){
+ if(adminUser.value.trim()===ADMIN_USER&&adminPass.value===ADMIN_PASS){show('adminPanel');showAdminTab('dash');log('Login admin','Administrador');refreshAdmin();return}
+ msg('adminLoginMsg','Credenciales incorrectas.');
+}
+function show(idn){['auth','client','admin'].forEach(x=>document.getElementById(x).classList.add('hidden'));document.getElementById(idn).classList.remove('hidden')}
+function logout(){current=null;show('auth');document.getElementById('adminPanel').classList.add('hidden');document.getElementById('actionBox').classList.add('hidden')}
+adminBtn.onclick=()=>{show('admin')}
+
+function openAction(type){
+ const box=document.getElementById('actionBox');box.classList.remove('hidden');
+ const titles={deposit:'Abonar saldo interno',withdraw:'Retirar saldo interno',transfer:'Enviar a otro usuario',pay:'Pagar a otro usuario',creditPay:'Pagar crédito',invest:'Crear inversión'};
+ let html='<h2>'+titles[type]+'</h2><div id="actMsg"></div>';
+ if(type==='deposit'||type==='withdraw') html+='<input id="actAmount" type="number" min="0.01" step="0.01" placeholder="Monto en PEN">';
+ if(type==='transfer'||type==='pay') html+='<input id="actUser" placeholder="Usuario destino"><input id="actAmount" type="number" min="0.01" step="0.01" placeholder="Monto en PEN">';
+ if(type==='creditPay') html+='<select id="actCredit">'+db.credits.filter(x=>x.clientId===current&&x.status==='approved'&&x.remaining>0).map(x=>'<option value="'+x.id+'">Crédito #'+x.id+' · saldo '+money(x.remaining)+'</option>').join('')+'</select><input id="actAmount" type="number" min="0.01" step="0.01" placeholder="Monto">';
+ if(type==='invest') html+='<select id="actCurrency"><option value="PEN">PEN</option><option value="USD">USD</option></select><input id="actAmount" type="number" min="0.01" step="0.01" placeholder="Monto">';
+ html+='<div class="actions"><button class="btn primary" onclick="doAction(\''+type+'\')">Confirmar</button><button class="btn ghost" onclick="actionBox.classList.add(\'hidden\')">Cancelar</button></div>';
+ box.innerHTML=html;
+}
+function doAction(type){
+ const c=client(), a=Number(document.getElementById('actAmount')?.value||0);
+ if(a<=0)return msg('actMsg','Ingresa un monto válido.');
+ if(type==='deposit'){c.balance+=a;addMov(c.id,'ABONO',a,'Abono interno');}
+ if(type==='withdraw'){if(c.balance<a)return msg('actMsg','Saldo insuficiente.');c.balance-=a;addMov(c.id,'RETIRO',-a,'Retiro interno');}
+ if(type==='transfer'||type==='pay'){
+   const u=document.getElementById('actUser').value.trim().toLowerCase(),dest=db.clients.find(x=>x.username===u);
+   if(!dest)return msg('actMsg','No existe ese usuario.');
+   if(dest.id===c.id)return msg('actMsg','No puedes enviarte dinero a ti mismo.');
+   if(c.balance<a)return msg('actMsg','Saldo insuficiente.');
+   c.balance-=a;dest.balance+=a;addMov(c.id,type==='pay'?'PAGO':'ENVIO',-a,(type==='pay'?'Pago a ':'Envío a ')+dest.username);addMov(dest.id,type==='pay'?'COBRO':'RECEPCION',a,(type==='pay'?'Cobro de ':'Recepción de ')+c.username);
+ }
+ if(type==='creditPay'){
+   const cr=db.credits.find(x=>x.id===Number(document.getElementById('actCredit').value));
+   if(!cr)return msg('actMsg','No hay crédito seleccionado.');
+   if(c.balance<a)return msg('actMsg','Saldo insuficiente.');
+   a2=Math.min(a,cr.remaining);c.balance-=a2;cr.remaining-=a2;db.creditPayments.push({id:id(),creditId:cr.id,clientId:c.id,amount:a2,at:new Date().toLocaleString('es-PE')});addMov(c.id,'PAGO CRÉDITO',-a2,'Pago crédito #'+cr.id);if(cr.remaining<=0.005)cr.status='paid';
+ }
+ if(type==='invest'){
+   const cur=document.getElementById('actCurrency').value;
+   if(cur==='PEN'){if(c.balance<a)return msg('actMsg','Saldo PEN insuficiente.');c.balance-=a;}
+   db.investments.unshift({id:id(),clientId:c.id,currency:cur,amount:a,status:'active',at:new Date().toLocaleString('es-PE')});
+   if(cur==='PEN')addMov(c.id,'INVERSIÓN',-a,'Inversión PEN');
+ }
+ save();log('Operación cliente',type);actionBox.classList.add('hidden');msg('clientMsg','Operación realizada correctamente.',true);refreshClient();refreshAdmin();
+}
+function addMov(cid,type,amount,detail){db.movements.unshift({id:id(),clientId:cid,type,amount,detail,at:new Date().toLocaleString('es-PE'),balanceAfter:db.clients.find(x=>x.id===cid).balance})}
+
+function refreshClient(){
+ const c=client();if(!c)return;
+ clientName.textContent=c.name;clientUser.textContent='@'+c.username;balance.textContent=money(c.balance);
+ pName.textContent=c.name;pDoc.textContent=c.doc;pPhone.textContent=c.phone;pEmail.textContent=c.email;pUser.textContent=c.username;
+ const ms=db.movements.filter(x=>x.clientId===c.id);movCount.textContent=ms.length;
+ movements.innerHTML=ms.slice(0,20).map(x=>'<p><b>'+esc(x.type)+'</b> · '+money(x.amount)+'<br><span class="muted small">'+esc(x.detail)+' · '+esc(x.at)+'</span></p>').join('')||'<p class="muted">Sin movimientos.</p>';
+ const cr=db.credits.filter(x=>x.clientId===c.id);credits.innerHTML=cr.map(x=>'<p>Crédito #'+x.id+' · '+money(x.amount)+' · <b>'+x.status+'</b><br><span class="muted">Saldo: '+money(x.remaining)+'</span></p>').join('')||'<p class="muted">No tienes créditos.</p>';
+ const inv=db.investments.filter(x=>x.clientId===c.id);investments.innerHTML=inv.map(x=>'<p>Inversión #'+x.id+' · '+money(x.amount,x.currency)+' · <b>'+x.status+'</b><br><span class="muted">'+x.at+'</span></p>').join('')||'<p class="muted">No tienes inversiones.</p>';
+ const camps=db.campaigns.filter(x=>x.active&&c.balance>=x.minBalance);campaigns.innerHTML=camps.map(x=>'<div class="msg"><b>'+esc(x.name)+'</b><br>'+esc(x.description)+'<br><span class="small">Saldo mínimo: '+money(x.minBalance)+'</span></div>').join('')||'<p class="muted">No hay campañas disponibles.</p>';
+}
+function showAdminTab(t,btn){
+ document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));if(btn)btn.classList.add('active');
+ let h='';
+ if(t==='dash')h='<h2>Resumen</h2><p>Todos los datos de esta versión se guardan localmente en el navegador.</p>';
+ if(t==='clients')h='<h2>Clientes</h2><table><tr><th>ID</th><th>Cliente</th><th>Usuario</th><th>Saldo</th></tr>'+db.clients.map(x=>'<tr><td>'+x.id+'</td><td>'+esc(x.name)+'</td><td>@'+esc(x.username)+'</td><td>'+money(x.balance)+'</td></tr>').join('')+'</table>';
+ if(t==='movs')h='<h2>Movimientos</h2><table><tr><th>Fecha</th><th>Cliente</th><th>Tipo</th><th>Monto</th></tr>'+db.movements.slice(0,100).map(x=>'<tr><td>'+esc(x.at)+'</td><td>'+esc(db.clients.find(c=>c.id===x.clientId)?.username||'-')+'</td><td>'+esc(x.type)+'</td><td>'+money(x.amount)+'</td></tr>').join('')+'</table>';
+ if(t==='credits')h='<h2>Créditos</h2><div class="grid"><div><input id="crUser" placeholder="Usuario"><input id="crAmount" type="number" placeholder="Monto PEN"><input id="crRate" type="number" placeholder="Tasa anual %"><input id="crTerm" type="number" placeholder="Plazo meses"><button class="btn primary" onclick="createCredit()">Crear crédito</button></div><div><table><tr><th>ID</th><th>Usuario</th><th>Monto</th><th>Estado</th></tr>'+db.credits.map(x=>'<tr><td>'+x.id+'</td><td>'+esc(db.clients.find(c=>c.id===x.clientId)?.username||'-')+'</td><td>'+money(x.amount)+'</td><td>'+x.status+'</td></tr>').join('')+'</table></div></div>';
+ if(t==='campaigns')h='<h2>Campañas</h2><input id="campName" placeholder="Nombre"><input id="campDesc" placeholder="Descripción"><input id="campMin" type="number" placeholder="Saldo mínimo PEN"><button class="btn primary" onclick="createCampaign()">Crear campaña</button><hr><div>'+db.campaigns.map(x=>'<p><b>'+esc(x.name)+'</b> · mínimo '+money(x.minBalance)+' · '+(x.active?'Activa':'Inactiva')+'</p>').join('')+'</div>';
+ if(t==='invest')h='<h2>Inversiones</h2><table><tr><th>ID</th><th>Usuario</th><th>Moneda</th><th>Monto</th><th>Estado</th></tr>'+db.investments.map(x=>'<tr><td>'+x.id+'</td><td>'+esc(db.clients.find(c=>c.id===x.clientId)?.username||'-')+'</td><td>'+x.currency+'</td><td>'+money(x.amount,x.currency)+'</td><td>'+x.status+'</td></tr>').join('')+'</table>';
+ if(t==='audit')h='<h2>Auditoría</h2><table><tr><th>Fecha</th><th>Tipo</th><th>Detalle</th></tr>'+db.audit.slice(0,100).map(x=>'<tr><td>'+esc(x.at)+'</td><td>'+esc(x.type)+'</td><td>'+esc(x.detail)+'</td></tr>').join('')+'</table>';
+ adminContent.innerHTML=h||'<p>Sin datos.</p>';refreshAdmin();
+}
+function refreshAdmin(){
+ mClients.textContent=db.clients.length;mBalance.textContent=money(db.clients.reduce((a,c)=>a+c.balance,0));mMovs.textContent=db.movements.length;
+}
+function createCredit(){
+ const u=crUser.value.trim().toLowerCase(),c=db.clients.find(x=>x.username===u),a=Number(crAmount.value),rate=Number(crRate.value),term=Number(crTerm.value);
+ if(!c||a<=0||term<=0)return alert('Revisa usuario, monto y plazo.');
+ const total=a*(1+rate/100*term/12);
+ db.credits.unshift({id:id(),clientId:c.id,amount:a,total,remaining:total,rate,term,status:'approved',at:new Date().toLocaleString('es-PE')});
+ c.balance+=a;addMov(c.id,'DESEMBOLSO CRÉDITO',a,'Crédito #'+db.credits[0].id);save();log('Crédito','Creado para '+u);showAdminTab('credits');
+}
+function createCampaign(){
+ const n=campName.value.trim(),d=campDesc.value.trim(),m=Number(campMin.value);
+ if(!n)return alert('Ingresa el nombre.');
+ db.campaigns.unshift({id:id(),name:n,description:d,minBalance:m||0,active:true});save();log('Campaña',n);showAdminTab('campaigns');
+}
+function resetDemo(){
+ if(confirm('¿Borrar todos los datos locales de IZIDA?')){localStorage.removeItem(KEY);location.reload()}
+}
+show('auth');
 </script>
+</body>
+</html>

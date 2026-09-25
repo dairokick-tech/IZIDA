@@ -1,13 +1,24 @@
-# IZIDA — GitHub Pages
+# IZIDA — Cliente + Administrador independiente
 
-## Accesos
-- Cliente: `./`
-- Administrador: `./admin/`
+## Acceso
+Cliente:
+`https://TU-USUARIO.github.io/TU-REPOSITORIO/`
 
-El panel administrativo está separado del panel cliente y **no solicita usuario ni contraseña**.
-
-### GitHub Pages
-Sube todo el contenido de esta carpeta al repositorio. La dirección administrativa quedará en:
+Administrador:
 `https://TU-USUARIO.github.io/TU-REPOSITORIO/admin/`
 
-Los datos de esta versión se almacenan en `localStorage` del navegador; no es una base de datos centralizada ni mueve dinero bancario real.
+El cliente tiene un botón visible **🔐 ADMINISTRADOR** que abre la ruta independiente `/admin/`.
+No se solicita usuario ni contraseña.
+
+## Subida a GitHub Pages
+Sube el contenido de este ZIP conservando la carpeta `admin/`:
+
+```text
+index.html
+.nojekyll
+README.md
+admin/
+  index.html
+```
+
+Si GitHub Pages muestra una versión anterior, espera a que termine el despliegue y recarga la página.

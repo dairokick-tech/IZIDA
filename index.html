@@ -24,72 +24,15 @@ footer{padding:30px 0 60px;color:#766e87;text-align:center}.topline{display:flex
 </head>
 <body>
 <header><div class="wrap nav">
-  <div class="brand"><div class="logo">IZ</div> IZIDA</div>
-  <button class="btn ghost" id="adminBtn">Administrador</button>
+  <div class="brand"><div class="logo">IZ</div> IZIDA · ADMIN</div>
+  <a class="btn ghost" href="../">Ir a la billetera</a>
 </div></header>
-
 <main class="wrap">
-<section id="auth">
-  <div class="hero">
-    <h1>Mi billetera</h1>
-    <p class="muted">Billetera digital IZIDA · PEN</p>
-  </div>
-  <div class="grid">
-    <div class="card">
-      <h2>Ingresar</h2>
-      <div id="loginMsg"></div>
-      <label>Usuario</label><input id="loginUser" autocomplete="username">
-      <label>Contraseña</label><input id="loginPass" type="password" autocomplete="current-password">
-      <button class="btn primary" style="width:100%" onclick="login()">Ingresar</button>
-    </div>
-    <div class="card">
-      <h2>Crear cuenta IZIDA</h2>
-      <div id="regMsg"></div>
-      <input id="regName" placeholder="Nombre completo">
-      <input id="regDoc" placeholder="Documento">
-      <input id="regPhone" placeholder="Teléfono">
-      <input id="regEmail" type="email" placeholder="Correo electrónico">
-      <input id="regUser" placeholder="Usuario">
-      <input id="regPass" type="password" placeholder="Contraseña">
-      <button class="btn primary" style="width:100%" onclick="register()">Crear cuenta</button>
-    </div>
-  </div>
-</section>
-
-<section id="client" class="hidden">
-  <div class="topline"><div><h1>Hola, <span id="clientName"></span></h1><div class="muted" id="clientUser"></div></div><button class="btn ghost" onclick="logout()">Salir</button></div>
-  <div class="balance"><span>Saldo disponible</span><strong id="balance">S/ 0.00</strong><span class="small">Billetera IZIDA · soles</span></div>
-  <div class="actions" style="margin:14px 0">
-    <button class="btn primary" onclick="openAction('deposit')">Abonar</button>
-    <button class="btn secondary" onclick="openAction('withdraw')">Retirar</button>
-    <button class="btn secondary" onclick="openAction('transfer')">Enviar</button>
-    <button class="btn secondary" onclick="openAction('pay')">Pagar</button>
-    <button class="btn secondary" onclick="openAction('creditPay')">Pagar crédito</button>
-    <button class="btn secondary" onclick="openAction('invest')">Invertir</button>
-  </div>
-  <div id="clientMsg"></div>
-  <div id="actionBox" class="card hidden"></div>
-  <div class="grid">
-    <div class="card"><div class="topline"><h2>Actividad</h2><span class="pill" id="movCount">0</span></div><div id="movements"></div></div>
-    <div class="card"><h2>Mi información</h2><p><b>Nombre:</b> <span id="pName"></span></p><p><b>Documento:</b> <span id="pDoc"></span></p><p><b>Teléfono:</b> <span id="pPhone"></span></p><p><b>Correo:</b> <span id="pEmail"></span></p><p><b>Usuario:</b> <span id="pUser"></span></p></div>
-  </div>
-  <div class="grid">
-    <div class="card"><h2>Créditos</h2><div id="credits"></div></div>
-    <div class="card"><h2>Inversiones</h2><div id="investments"></div></div>
-  </div>
-  <div class="card"><h2>Campañas disponibles</h2><div id="campaigns"></div></div>
-</section>
-
-<section id="admin" class="hidden">
-  <div class="topline"><div><h1>Panel administrador</h1><p class="muted">IZIDA · operación interna</p></div><button class="btn ghost" onclick="logout()">Salir</button></div>
-  <div class="card">
-    <h2>Acceso administrador</h2>
-    <div id="adminLoginMsg"></div>
-    <input id="adminUser" value="admin" placeholder="Usuario">
-    <input id="adminPass" type="password" placeholder="Contraseña">
-    <button class="btn primary" onclick="adminLogin()">Ingresar</button>
-  </div>
-  <div id="adminPanel" class="hidden">
+<section id="auth" class="hidden"></section>
+<section id="client" class="hidden"></section>
+<section id="admin">
+  <div class="topline"><div><h1>Panel administrativo</h1><p class="muted">Acceso directo · sin usuario ni contraseña</p></div><a class="btn ghost" href="../">Salir al cliente</a></div>
+  <div id="adminPanel">
     <div class="grid3">
       <div class="card"><span class="muted">Clientes</span><h2 id="mClients">0</h2></div>
       <div class="card"><span class="muted">Saldo PEN</span><h2 id="mBalance">S/ 0.00</h2></div>
@@ -102,19 +45,20 @@ footer{padding:30px 0 60px;color:#766e87;text-align:center}.topline{display:flex
       <button class="tab" onclick="showAdminTab('credits',this)">Créditos</button>
       <button class="tab" onclick="showAdminTab('campaigns',this)">Campañas</button>
       <button class="tab" onclick="showAdminTab('invest',this)">Inversiones</button>
+      <button class="tab" onclick="showAdminTab('investors',this)">Inversores</button>
+      <button class="tab" onclick="showAdminTab('capital',this)">Capital</button>
       <button class="tab" onclick="showAdminTab('audit',this)">Auditoría</button>
     </div>
     <div id="adminContent" class="card"></div>
   </div>
 </section>
 </main>
-<footer>IZIDA · Sistema independiente para demostración. Los abonos/retiros son registros internos y no mueven dinero bancario real.</footer>
-
+<footer>IZIDA · Panel administrativo independiente.</footer>
 <script>
 const KEY='izida_static_v2';
-const ADMIN_USER='admin', ADMIN_PASS='IZIDA2026';
 let db=JSON.parse(localStorage.getItem(KEY)||'null');
-if(!db){db={clients:[],movements:[],credits:[],creditPayments:[],campaigns:[],investments:[],audit:[],nextId:1};save()}
+if(!db){db={clients:[],movements:[],credits:[],creditPayments:[],campaigns:[],investments:[],investors:[],capital:[],audit:[],nextId:1};save()}
+else {db.clients=db.clients||[];db.movements=db.movements||[];db.credits=db.credits||[];db.creditPayments=db.creditPayments||[];db.campaigns=db.campaigns||[];db.investments=db.investments||[];db.investors=db.investors||[];db.capital=db.capital||[];db.audit=db.audit||[];db.nextId=db.nextId||1;save()}
 let current=null;
 
 function save(){localStorage.setItem(KEY,JSON.stringify(db))}
@@ -139,13 +83,10 @@ function login(){
  if(!c)return msg('loginMsg','Usuario o contraseña incorrectos.');
  current=c.id;log('Login cliente',u);show('client');refreshClient();
 }
-function adminLogin(){
- if(adminUser.value.trim()===ADMIN_USER&&adminPass.value===ADMIN_PASS){show('adminPanel');showAdminTab('dash');log('Login admin','Administrador');refreshAdmin();return}
- msg('adminLoginMsg','Credenciales incorrectas.');
-}
+function adminLogin(){ show('admin'); document.getElementById('adminPanel').classList.remove('hidden'); showAdminTab('dash'); refreshAdmin(); }
 function show(idn){['auth','client','admin'].forEach(x=>document.getElementById(x).classList.add('hidden'));document.getElementById(idn).classList.remove('hidden')}
-function logout(){current=null;show('auth');document.getElementById('adminPanel').classList.add('hidden');document.getElementById('actionBox').classList.add('hidden')}
-adminBtn.onclick=()=>{show('admin')}
+function logout(){current=null;show('admin'); document.getElementById('adminPanel').classList.remove('hidden'); showAdminTab('dash'); refreshAdmin();document.getElementById('adminPanel').classList.add('hidden');document.getElementById('actionBox').classList.add('hidden')}
+
 
 function openAction(type){
  const box=document.getElementById('actionBox');box.classList.remove('hidden');
@@ -174,7 +115,7 @@ function doAction(type){
    const cr=db.credits.find(x=>x.id===Number(document.getElementById('actCredit').value));
    if(!cr)return msg('actMsg','No hay crédito seleccionado.');
    if(c.balance<a)return msg('actMsg','Saldo insuficiente.');
-   a2=Math.min(a,cr.remaining);c.balance-=a2;cr.remaining-=a2;db.creditPayments.push({id:id(),creditId:cr.id,clientId:c.id,amount:a2,at:new Date().toLocaleString('es-PE')});addMov(c.id,'PAGO CRÉDITO',-a2,'Pago crédito #'+cr.id);if(cr.remaining<=0.005)cr.status='paid';
+   const a2=Math.min(a,cr.remaining);c.balance-=a2;cr.remaining-=a2;db.creditPayments.push({id:id(),creditId:cr.id,clientId:c.id,amount:a2,at:new Date().toLocaleString('es-PE')});addMov(c.id,'PAGO CRÉDITO',-a2,'Pago crédito #'+cr.id);if(cr.remaining<=0.005)cr.status='paid';
  }
  if(type==='invest'){
    const cur=document.getElementById('actCurrency').value;
@@ -202,10 +143,12 @@ function showAdminTab(t,btn){
  if(t==='dash')h='<h2>Resumen</h2><p>Todos los datos de esta versión se guardan localmente en el navegador.</p>';
  if(t==='clients')h='<h2>Clientes</h2><table><tr><th>ID</th><th>Cliente</th><th>Usuario</th><th>Saldo</th></tr>'+db.clients.map(x=>'<tr><td>'+x.id+'</td><td>'+esc(x.name)+'</td><td>@'+esc(x.username)+'</td><td>'+money(x.balance)+'</td></tr>').join('')+'</table>';
  if(t==='movs')h='<h2>Movimientos</h2><table><tr><th>Fecha</th><th>Cliente</th><th>Tipo</th><th>Monto</th></tr>'+db.movements.slice(0,100).map(x=>'<tr><td>'+esc(x.at)+'</td><td>'+esc(db.clients.find(c=>c.id===x.clientId)?.username||'-')+'</td><td>'+esc(x.type)+'</td><td>'+money(x.amount)+'</td></tr>').join('')+'</table>';
- if(t==='credits')h='<h2>Créditos</h2><div class="grid"><div><input id="crUser" placeholder="Usuario"><input id="crAmount" type="number" placeholder="Monto PEN"><input id="crRate" type="number" placeholder="Tasa anual %"><input id="crTerm" type="number" placeholder="Plazo meses"><button class="btn primary" onclick="createCredit()">Crear crédito</button></div><div><table><tr><th>ID</th><th>Usuario</th><th>Monto</th><th>Estado</th></tr>'+db.credits.map(x=>'<tr><td>'+x.id+'</td><td>'+esc(db.clients.find(c=>c.id===x.clientId)?.username||'-')+'</td><td>'+money(x.amount)+'</td><td>'+x.status+'</td></tr>').join('')+'</table></div></div>';
- if(t==='campaigns')h='<h2>Campañas</h2><input id="campName" placeholder="Nombre"><input id="campDesc" placeholder="Descripción"><input id="campMin" type="number" placeholder="Saldo mínimo PEN"><button class="btn primary" onclick="createCampaign()">Crear campaña</button><hr><div>'+db.campaigns.map(x=>'<p><b>'+esc(x.name)+'</b> · mínimo '+money(x.minBalance)+' · '+(x.active?'Activa':'Inactiva')+'</p>').join('')+'</div>';
+ if(t==='credits')h='<h2>Créditos: registrar y aprobar</h2><div class="grid"><div><input id="crUser" placeholder="Usuario del cliente"><input id="crAmount" type="number" min="0.01" step="0.01" placeholder="Monto PEN"><input id="crRate" type="number" min="0" step="0.01" placeholder="Tasa anual %"><input id="crTerm" type="number" min="1" step="1" placeholder="Plazo meses"><button class="btn primary" onclick="createCredit()">Registrar crédito</button></div><div><table><tr><th>ID</th><th>Usuario</th><th>Monto</th><th>Estado</th><th>Acción</th></tr>'+db.credits.map(x=>'<tr><td>'+x.id+'</td><td>'+esc(db.clients.find(c=>c.id===x.clientId)?.username||'-')+'</td><td>'+money(x.amount)+'</td><td>'+x.status+'</td><td>'+(x.status==='pending'?'<button class="btn secondary" onclick="approveCredit('+x.id+')">Aprobar y desembolsar</button>':x.status==='approved'?'<span class="pill">Aprobado</span>':'<span class="pill">'+esc(x.status)+'</span>')+'</td></tr>').join('')+'</table></div></div>';
+ if(t==='campaigns')h='<h2>Campañas de crédito</h2><div class="grid"><div><input id="campName" placeholder="Nombre de campaña"><input id="campDesc" placeholder="Descripción"><input id="campMin" type="number" min="0" step="0.01" placeholder="Saldo mínimo PEN"><input id="campMax" type="number" min="0" step="0.01" placeholder="Monto máximo PEN"><input id="campRate" type="number" min="0" step="0.01" placeholder="Tasa anual %"><input id="campTerm" type="number" min="1" placeholder="Plazo máximo meses"><button class="btn primary" onclick="createCampaign()">Registrar campaña</button></div><div>'+db.campaigns.map(x=>'<div class="msg"><b>'+esc(x.name)+'</b><br>'+esc(x.description||'')+'<br><span class="small">Mínimo: '+money(x.minBalance)+' · Máximo: '+money(x.maxAmount||0)+' · Tasa: '+Number(x.rate||0)+'% · Plazo: '+Number(x.term||0)+' meses · '+(x.active?'Activa':'Inactiva')+'</span></div>').join('')+'</div></div>';
  if(t==='invest')h='<h2>Inversiones</h2><table><tr><th>ID</th><th>Usuario</th><th>Moneda</th><th>Monto</th><th>Estado</th></tr>'+db.investments.map(x=>'<tr><td>'+x.id+'</td><td>'+esc(db.clients.find(c=>c.id===x.clientId)?.username||'-')+'</td><td>'+x.currency+'</td><td>'+money(x.amount,x.currency)+'</td><td>'+x.status+'</td></tr>').join('')+'</table>';
- if(t==='audit')h='<h2>Auditoría</h2><table><tr><th>Fecha</th><th>Tipo</th><th>Detalle</th></tr>'+db.audit.slice(0,100).map(x=>'<tr><td>'+esc(x.at)+'</td><td>'+esc(x.type)+'</td><td>'+esc(x.detail)+'</td></tr>').join('')+'</table>';
+ if(t==='investors')h='<h2>Registro de inversores</h2><div class="grid"><div><input id="invName" placeholder="Nombre completo / razón social"><input id="invDoc" placeholder="DNI / RUC"><input id="invContact" placeholder="Teléfono o correo"><input id="invCapital" type="number" min="0.01" step="0.01" placeholder="Capital inicial"><select id="invCurrency"><option value="PEN">PEN</option><option value="USD">USD</option></select><button class="btn primary" onclick="createInvestor()">Registrar inversor</button></div><div><table><tr><th>ID</th><th>Inversor</th><th>Documento</th><th>Capital</th></tr>'+db.investors.map(x=>'<tr><td>'+x.id+'</td><td>'+esc(x.name)+'</td><td>'+esc(x.doc)+'</td><td>'+money(x.capital,x.currency)+'</td></tr>').join('')+'</table></div></div>';
+if(t==='capital')h='<h2>Capital registrado</h2><div class="grid3"><div class="card"><span class="muted">Capital PEN</span><h2>'+money(db.capital.filter(x=>x.currency==='PEN').reduce((a,x)=>a+x.amount,0))+'</h2></div><div class="card"><span class="muted">Capital USD</span><h2>'+money(db.capital.filter(x=>x.currency==='USD').reduce((a,x)=>a+x.amount,0),'USD')+'</h2></div><div class="card"><span class="muted">Registros</span><h2>'+db.capital.length+'</h2></div></div><table><tr><th>Fecha</th><th>Inversor</th><th>Concepto</th><th>Moneda</th><th>Monto</th></tr>'+db.capital.map(x=>'<tr><td>'+esc(x.at)+'</td><td>'+esc(x.investorName)+'</td><td>'+esc(x.concept)+'</td><td>'+x.currency+'</td><td>'+money(x.amount,x.currency)+'</td></tr>').join('')+'</table>';
+if(t==='audit')h='<h2>Auditoría</h2><table><tr><th>Fecha</th><th>Tipo</th><th>Detalle</th></tr>'+db.audit.slice(0,100).map(x=>'<tr><td>'+esc(x.at)+'</td><td>'+esc(x.type)+'</td><td>'+esc(x.detail)+'</td></tr>').join('')+'</table>';
  adminContent.innerHTML=h||'<p>Sin datos.</p>';refreshAdmin();
 }
 function refreshAdmin(){
@@ -213,18 +156,25 @@ function refreshAdmin(){
 }
 function createCredit(){
  const u=crUser.value.trim().toLowerCase(),c=db.clients.find(x=>x.username===u),a=Number(crAmount.value),rate=Number(crRate.value),term=Number(crTerm.value);
- if(!c||a<=0||term<=0)return alert('Revisa usuario, monto y plazo.');
+ if(!c||a<=0||term<=0||rate<0)return alert('Revisa usuario, monto, tasa y plazo.');
  const total=a*(1+rate/100*term/12);
- db.credits.unshift({id:id(),clientId:c.id,amount:a,total,remaining:total,rate,term,status:'approved',at:new Date().toLocaleString('es-PE')});
- c.balance+=a;addMov(c.id,'DESEMBOLSO CRÉDITO',a,'Crédito #'+db.credits[0].id);save();log('Crédito','Creado para '+u);showAdminTab('credits');
+ const cr={id:id(),clientId:c.id,amount:a,total,remaining:total,rate,term,status:'pending',at:new Date().toLocaleString('es-PE'),approvedAt:null};
+ db.credits.unshift(cr);save();log('Crédito registrado','Crédito #'+cr.id+' para '+u+' pendiente de aprobación');showAdminTab('credits');
+}
+function approveCredit(cid){
+ const cr=db.credits.find(x=>x.id===Number(cid));if(!cr||cr.status!=='pending')return;
+ const c=db.clients.find(x=>x.id===cr.clientId);if(!c)return;
+ cr.status='approved';cr.approvedAt=new Date().toLocaleString('es-PE');c.balance+=cr.amount;addMov(c.id,'DESEMBOLSO CRÉDITO',cr.amount,'Crédito aprobado #'+cr.id);save();log('Crédito aprobado','Crédito #'+cr.id+' desembolsado a '+c.username);showAdminTab('credits');refreshClient();
 }
 function createCampaign(){
- const n=campName.value.trim(),d=campDesc.value.trim(),m=Number(campMin.value);
- if(!n)return alert('Ingresa el nombre.');
- db.campaigns.unshift({id:id(),name:n,description:d,minBalance:m||0,active:true});save();log('Campaña',n);showAdminTab('campaigns');
+ const n=campName.value.trim(),d=campDesc.value.trim(),m=Number(campMin.value)||0,max=Number(campMax.value)||0,rate=Number(campRate.value)||0,term=Number(campTerm.value)||0;
+ if(!n)return alert('Ingresa el nombre de la campaña.');
+ db.campaigns.unshift({id:id(),name:n,description:d,minBalance:m,maxAmount:max,rate,term,active:true,at:new Date().toLocaleString('es-PE')});save();log('Campaña de crédito','Registrada '+n);showAdminTab('campaigns');
 }
-function resetDemo(){
- if(confirm('¿Borrar todos los datos locales de IZIDA?')){localStorage.removeItem(KEY);location.reload()}
+function createInvestor(){
+ const name=invName.value.trim(),doc=invDoc.value.trim(),contact=invContact.value.trim(),capital=Number(invCapital.value)||0,currency=invCurrency.value;
+ if(!name||!doc||capital<=0)return alert('Completa inversor, documento y capital.');
+ const inv={id:id(),name,doc,contact,capital,currency,at:new Date().toLocaleString('es-PE')};db.investors.unshift(inv);db.capital.unshift({id:id(),investorId:inv.id,investorName:name,concept:'Capital inicial de inversor',currency,amount:capital,at:inv.at});save();log('Inversor registrado',name+' · '+money(capital,currency));showAdminTab('investors');
 }
 show('auth');
 </script>

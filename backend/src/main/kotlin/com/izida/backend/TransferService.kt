@@ -8,6 +8,16 @@ data class TransferResult(val transactionId: UUID, val amount: BigDecimal, val c
 class TransferService {
     fun transfer(userId: UUID, recipientPhone: String, amount: BigDecimal, currency: String, idempotencyKey: String, reference: String? = null): TransferResult {
         require(recipientPhone.matches(Regex("[0-9]{9}"))) { "Celular inválido" }
+        val destinationResolver: (java.sql.Connection) -> Account? = { c -> findAccountByPhone(c, recipientPhone) }
+        return executeTransfer(userId, destinationResolver, amount, currency, idempotencyKey, reference)
+    }
+
+    fun transferToAccount(userId: UUID, destinationAccountId: UUID, amount: BigDecimal, currency: String, idempotencyKey: String, reference: String? = null): TransferResult {
+        val destinationResolver: (java.sql.Connection) -> Account? = { c -> findAccountById(c, destinationAccountId) }
+        return executeTransfer(userId, destinationResolver, amount, currency, idempotencyKey, reference)
+    }
+
+    private fun executeTransfer(userId: UUID, destinationResolver: (java.sql.Connection) -> Account?, amount: BigDecimal, currency: String, idempotencyKey: String, reference: String?): TransferResult {
         require(amount > BigDecimal.ZERO) { "El monto debe ser mayor que cero" }
         require(amount.scale() <= 2) { "El monto admite hasta 2 decimales" }
         require(currency == "PEN") { "Moneda no soportada" }
@@ -25,7 +35,7 @@ class TransferService {
                 if (existing != null) { c.commit(); return existing }
 
                 val source = findAccount(c, userId) ?: throw IllegalArgumentException("Cuenta de origen no encontrada")
-                val destination = findAccountByPhone(c, recipientPhone) ?: throw IllegalArgumentException("Destinatario no encontrado")
+                val destination = destinationResolver(c) ?: throw IllegalArgumentException("Destinatario no encontrado")
                 require(source.id != destination.id) { "No puedes enviarte dinero a tu propia cuenta" }
                 require(source.currency == currency && destination.currency == currency) { "Moneda no soportada" }
                 require(source.status == "ACTIVE" && destination.status == "ACTIVE") { "Cuenta no disponible" }
@@ -62,6 +72,11 @@ class TransferService {
             s.setString(1,phone); s.executeQuery().use { rs -> if (rs.next()) Account(rs.getObject("id",UUID::class.java),rs.getString("currency").trim(),rs.getString("status")) else null }
         }
 
+    private fun findAccountById(c: java.sql.Connection, accountId: UUID): Account? =
+        c.prepareStatement("SELECT id,currency,status FROM accounts WHERE id=? LIMIT 1").use { s ->
+            s.setObject(1,accountId); s.executeQuery().use { rs -> if (rs.next()) Account(rs.getObject("id",UUID::class.java),rs.getString("currency").trim(),rs.getString("status")) else null }
+        }
+
     private fun balance(c: java.sql.Connection, accountId: UUID): BigDecimal =
         c.prepareStatement("SELECT COALESCE(SUM(CASE WHEN entry_type='CREDIT' THEN amount WHEN entry_type='DEBIT' THEN -amount ELSE 0 END),0) FROM ledger_entries WHERE account_id=?").use { s ->
             s.setObject(1,accountId); s.executeQuery().use { rs -> rs.next(); rs.getBigDecimal(1) }
@@ -69,7 +84,8 @@ class TransferService {
 
     private fun insertEntry(c: java.sql.Connection, txId: UUID, accountId: UUID, type: String, amount: BigDecimal, currency: String) {
         c.prepareStatement("INSERT INTO ledger_entries(id,transaction_id,account_id,entry_type,amount,currency) VALUES (?,?,?,?,?,?)").use { s ->
-            s.setObject(1,UUID.randomUUID()); s.setObject(2,txId); s.setObject(3,accountId); s.setString(4,type); s.setBigDecimal(5,amount); s.setString(6,currency); s.executeUpdate()
+            s.setObject(1,UUID.randomUUID()); s.setObject(2,txId); s.setObject(3,accountId); s.setString(4,type); s.setBigDecimal(5,amount); s.setString(6,currency)
+            s.executeUpdate()
         }
     }
 }

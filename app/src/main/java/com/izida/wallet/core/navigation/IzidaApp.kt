@@ -73,7 +73,9 @@ fun IzidaApp() {
         composable(Routes.REGISTER) {
             RegisterScreen(
                 onBack = { navController.popBackStack() },
-                onCompleted = { navController.navigate(Routes.VERIFY_IDENTITY) }
+                onCompleted = { name, phone ->
+                    navController.navigate(Routes.CREATE_PIN)
+                }
             )
         }
         composable(Routes.VERIFY_IDENTITY) {
@@ -85,8 +87,7 @@ fun IzidaApp() {
         composable(Routes.CREATE_PIN) {
             CreatePinScreen(
                 onBack = { navController.popBackStack() },
-                onCompleted = {
-                    session.start()
+                onCompleted = { pin ->
                     navController.navigate(Routes.HOME) {
                         popUpTo(Routes.WELCOME) { inclusive = true }
                     }

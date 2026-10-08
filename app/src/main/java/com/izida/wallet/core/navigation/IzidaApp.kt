@@ -14,6 +14,7 @@ import com.izida.wallet.feature.home.HomeScreen
 import com.izida.wallet.feature.movement.MovementsScreen
 import com.izida.wallet.feature.qr.MyQrScreen
 import com.izida.wallet.feature.qr.ScanQrScreen
+import com.izida.wallet.feature.qr.QrPaymentScreen
 
 private object Routes {
     const val WELCOME = "welcome"
@@ -28,6 +29,7 @@ private object Routes {
     const val SEND = "send"
     const val MY_QR = "my_qr"
     const val SCAN_QR = "scan_qr"
+    const val QR_PAYMENT = "qr_payment"
 }
 
 @Composable
@@ -111,6 +113,9 @@ fun IzidaApp() {
         }
         composable(Routes.SCAN_QR) {
             ScanQrScreen(onBack = { navController.popBackStack() })
+        }
+        composable(Routes.QR_PAYMENT) {
+            QrPaymentScreen(onBack = { navController.popBackStack() })
         }
         composable(Routes.SECURITY) {
             SecurityCenterScreen(

@@ -38,7 +38,12 @@ fun QrPaymentScreen(api: IzidaApi, payload: IzidaQrPayload, onBack: () -> Unit) 
             Spacer(Modifier.height(12.dp))
             Button(onClick={
                 val value=amount.toBigDecimalOrNull()
-                if(value!=null && value>BigDecimal.ZERO && value.scale()<=2) step=PaymentStep.CONFIRM; idempotencyKey=UUID.randomUUID().toString() else error="Ingresa un monto válido (máximo 2 decimales)."
+                if (value != null && value > BigDecimal.ZERO && value.scale() <= 2) {
+                    step = PaymentStep.CONFIRM
+                    idempotencyKey = UUID.randomUUID().toString()
+                } else {
+                    error = "Ingresa un monto válido (máximo 2 decimales)."
+                }
             },modifier=Modifier.fillMaxWidth()){Text("Continuar")}
         } else if(step==PaymentStep.CONFIRM) {
             Text("Confirmar pago",style=MaterialTheme.typography.titleLarge)

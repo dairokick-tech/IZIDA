@@ -19,36 +19,64 @@ fun MovementsScreen(
     onBack: () -> Unit
 ) {
     var movements by remember { mutableStateOf<List<Movement>>(emptyList()) }
+    var loading by remember { mutableStateOf(true) }
+    var error by remember { mutableStateOf<String?>(null) }
     val formatter = remember {
         DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
             .withZone(ZoneId.systemDefault())
     }
 
-    LaunchedEffect(accountId) { movements = repository.getMovements(accountId) }
+    fun refresh() {
+        loading = true
+        error = null
+    }
+
+    LaunchedEffect(accountId, loading) {
+        if (loading) {
+            runCatching { repository.getMovements(accountId) }
+                .onSuccess { movements = it }
+                .onFailure { error = it.message ?: "No se pudo cargar el historial." }
+            loading = false
+        }
+    }
 
     Column(Modifier.fillMaxSize().padding(24.dp)) {
         TextButton(onClick = onBack) { Text("← Volver") }
         Spacer(Modifier.height(8.dp))
-        Text("Historial real", style = MaterialTheme.typography.headlineMedium)
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text("Historial real", style = MaterialTheme.typography.headlineMedium)
+            TextButton(onClick = ::refresh, enabled = !loading) { Text("Actualizar") }
+        }
         Spacer(Modifier.height(16.dp))
 
-        if (movements.isEmpty()) {
-            Card(Modifier.fillMaxWidth()) {
+        when {
+            loading -> CircularProgressIndicator()
+            error != null -> Text(error!!, color = MaterialTheme.colorScheme.error)
+            movements.isEmpty() -> Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(20.dp)) {
                     Text("Sin movimientos")
                     Spacer(Modifier.height(6.dp))
                     Text("Las transferencias procesadas por IZIDA aparecerán aquí.")
                 }
             }
-        } else {
-            movements.forEach { movement ->
+            else -> movements.forEach { movement ->
                 Card(Modifier.fillMaxWidth().padding(bottom = 10.dp)) {
                     Column(Modifier.padding(16.dp)) {
-                        Text(movement.description, style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            if (movement.type == MovementType.CREDIT) "RECIBIDO" else "ENVIADO",
+                            style = MaterialTheme.typography.titleMedium
+                        )
                         val sign = if (movement.type == MovementType.CREDIT) "+" else "-"
                         Text(sign + movement.currency + " " + String.format(Locale.US, "%.2f", movement.amount))
                         Text(formatter.format(movement.createdAt), style = MaterialTheme.typography.bodySmall)
-                        movement.reference?.let { Text("ID: " + it, style = MaterialTheme.typography.bodySmall) }
+                        Text("Estado: " + movement.status, style = MaterialTheme.typography.bodySmall)
+                        Text("Transacción: " + (movement.transactionId ?: movement.id), style = MaterialTheme.typography.bodySmall)
+                        movement.reference?.let {
+                            Text("Referencia: $it", style = MaterialTheme.typography.bodySmall)
+                        }
                     }
                 }
             }

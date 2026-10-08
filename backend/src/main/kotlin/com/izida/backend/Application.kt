@@ -48,6 +48,7 @@ fun Application.module() {
         }
         accountRoutes(accountRepository, authService)
         transferRoutes(authService, transferService)
+        recipientRoutes(authService)
         get("/health") {
             call.respond(
                 HttpStatusCode.OK,

@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 
 @Composable fun WelcomeScreen(onLogin:()->Unit,onRegister:()->Unit){
  Column(Modifier.fillMaxSize().padding(28.dp),Arrangement.Center,Alignment.CenterHorizontally){Text("IZIDA",style=MaterialTheme.typography.displaySmall);Text("Tu dinero. Tu control.",style=MaterialTheme.typography.titleMedium);Spacer(Modifier.height(40.dp));Button(onClick=onLogin,Modifier.fillMaxWidth()){Text("Iniciar sesión")};Spacer(Modifier.height(12.dp));OutlinedButton(onClick=onRegister,Modifier.fillMaxWidth()){Text("Crear cuenta")}}

@@ -39,10 +39,12 @@ private object Routes {
 @Composable
 fun IzidaApp() {
     val navController = rememberNavController()
-    val session = remember { AuthSession() }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val session = remember { AuthSession(context) }
     val ledger = remember { InMemoryLedger() }
     val accountRepository = remember(ledger) { LedgerMovementRepository(ledger) }
-    val remoteRepository = remember { RemoteAccountRepository(IzidaApi("http://10.0.2.2:8080")) }
+    val api = remember { IzidaApi("http://10.0.2.2:8080") }
+    val remoteRepository = remember { RemoteAccountRepository(api) }
     val recipientDirectory = remember { DemoRecipientDirectory() }
 
     NavHost(navController = navController, startDestination = Routes.WELCOME) {
@@ -55,10 +57,15 @@ fun IzidaApp() {
         composable(Routes.LOGIN) {
             LoginScreen(
                 onBack = { navController.popBackStack() },
-                onSuccess = {
-                    session.start()
-                    navController.navigate(Routes.HOME) {
-                        popUpTo(Routes.WELCOME) { inclusive = true }
+                onLogin = { phone, pin ->
+                    runCatching {
+                        val result = api.login(phone, pin)
+                        api.setToken(result.token)
+                        session.start(result.token)
+                        navController.navigate(Routes.HOME) {
+                            popUpTo(Routes.WELCOME) { inclusive = true }
+                        }
+                        result.token
                     }
                 }
             )
@@ -137,6 +144,7 @@ fun IzidaApp() {
             SecurityCenterScreen(
                 onBack = { navController.popBackStack() },
                 onLock = {
+                    api.setToken(null)
                     session.end()
                     navController.navigate(Routes.WELCOME) {
                         popUpTo(0) { inclusive = true }

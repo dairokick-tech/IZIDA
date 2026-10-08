@@ -20,6 +20,7 @@ fun SendMoneyScreen(api: IzidaApi, onBack: () -> Unit) {
     var recipient by remember { mutableStateOf<com.izida.wallet.data.remote.RecipientResponse?>(null) }
     var message by remember { mutableStateOf<String?>(null) }
     var transactionId by remember { mutableStateOf<String?>(null) }
+    var idempotencyKey by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
@@ -69,7 +70,7 @@ fun SendMoneyScreen(api: IzidaApi, onBack: () -> Unit) {
                 Button(
                     onClick = {
                         if ((amount.toBigDecimalOrNull() ?: BigDecimal.ZERO) > BigDecimal.ZERO) {
-                            step = SendStep.CONFIRM; message = null
+                            step = SendStep.CONFIRM; idempotencyKey = UUID.randomUUID().toString(); message = null
                         } else message = "Ingresa un monto válido."
                     },
                     modifier = Modifier.fillMaxWidth()
@@ -87,7 +88,7 @@ fun SendMoneyScreen(api: IzidaApi, onBack: () -> Unit) {
                     onClick = {
                         loading = true; message = null
                         scope.launch {
-                            runCatching { api.transfer(recipient!!.phone, amount, UUID.randomUUID().toString()) }
+                            runCatching { api.transfer(recipient!!.phone, amount, idempotencyKey ?: UUID.randomUUID().toString()) }
                                 .onSuccess { result -> transactionId = result.transactionId; step = SendStep.RESULT }
                                 .onFailure { message = it.message ?: "No se pudo procesar la transferencia." }
                             loading = false

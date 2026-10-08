@@ -29,6 +29,13 @@ class AuthService {
                 s.setObject(1,userId); s.setString(2,fullName.trim()); s.setString(3,phone)
                 s.setBytes(4,salt); s.setBytes(5,hash); s.executeUpdate()
             }
+            c.prepareStatement("INSERT INTO accounts(id,user_id,currency,status) VALUES (?,?,?,?)").use { s ->
+                s.setObject(1, UUID.randomUUID())
+                s.setObject(2, userId)
+                s.setString(3, "PEN")
+                s.setString(4, "ACTIVE")
+                s.executeUpdate()
+            }
             c.commit()
         }
         return createSession(userId, fullName.trim(), phone)

@@ -13,5 +13,7 @@ data class Movement(
     val amount: BigDecimal,
     val currency: String,
     val createdAt: Instant,
-    val reference: String? = null
+    val reference: String? = null,
+    val transactionId: String? = null,
+    val status: String = "PROCESSED"
 )

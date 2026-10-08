@@ -5,6 +5,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.izida.wallet.core.security.AuthSession
+import com.izida.wallet.BuildConfig
 import com.izida.wallet.data.account.RemoteAccountRepository
 import com.izida.wallet.data.remote.IzidaApi
 import com.izida.wallet.feature.transfer.SendMoneyScreen
@@ -38,7 +39,7 @@ fun IzidaApp() {
     val navController = rememberNavController()
     val context = androidx.compose.ui.platform.LocalContext.current
     val session = remember { AuthSession(context) }
-    val api = remember { IzidaApi("http://10.0.2.2:8080") }
+    val api = remember { IzidaApi(BuildConfig.IZIDA_API_BASE_URL) }
     val remoteRepository = remember { RemoteAccountRepository(api) }
     var pendingName by remember { mutableStateOf("") }
     var pendingPhone by remember { mutableStateOf("") }

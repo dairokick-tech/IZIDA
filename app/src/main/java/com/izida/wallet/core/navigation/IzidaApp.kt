@@ -112,7 +112,10 @@ fun IzidaApp() {
             MyQrScreen(onBack = { navController.popBackStack() })
         }
         composable(Routes.SCAN_QR) {
-            ScanQrScreen(onBack = { navController.popBackStack() })
+            ScanQrScreen(
+                onBack = { navController.popBackStack() },
+                onPay = { navController.navigate(Routes.QR_PAYMENT) }
+            )
         }
         composable(Routes.QR_PAYMENT) {
             QrPaymentScreen(onBack = { navController.popBackStack() })

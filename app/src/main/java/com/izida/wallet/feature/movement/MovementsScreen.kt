@@ -8,6 +8,8 @@ import androidx.compose.ui.unit.dp
 import com.izida.wallet.data.account.AccountRepository
 import com.izida.wallet.domain.movement.Movement
 import com.izida.wallet.domain.movement.MovementType
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @Composable
@@ -17,12 +19,17 @@ fun MovementsScreen(
     onBack: () -> Unit
 ) {
     var movements by remember { mutableStateOf<List<Movement>>(emptyList()) }
+    val formatter = remember {
+        DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
+            .withZone(ZoneId.systemDefault())
+    }
+
     LaunchedEffect(accountId) { movements = repository.getMovements(accountId) }
 
     Column(Modifier.fillMaxSize().padding(24.dp)) {
         TextButton(onClick = onBack) { Text("← Volver") }
         Spacer(Modifier.height(8.dp))
-        Text("Movimientos", style = MaterialTheme.typography.headlineMedium)
+        Text("Historial", style = MaterialTheme.typography.headlineMedium)
         Spacer(Modifier.height(16.dp))
 
         if (movements.isEmpty()) {
@@ -30,7 +37,7 @@ fun MovementsScreen(
                 Column(Modifier.padding(20.dp)) {
                     Text("Sin movimientos")
                     Spacer(Modifier.height(6.dp))
-                    Text("Aquí aparecerán las operaciones confirmadas por el backend.")
+                    Text("Las operaciones registradas aparecerán aquí.")
                 }
             }
         } else {
@@ -40,7 +47,8 @@ fun MovementsScreen(
                         Text(movement.description, style = MaterialTheme.typography.titleMedium)
                         val sign = if (movement.type == MovementType.CREDIT) "+" else "-"
                         Text(sign + movement.currency + " " + String.format(Locale.US, "%.2f", movement.amount))
-                        movement.reference?.let { Text("Referencia: " + it) }
+                        Text(formatter.format(movement.createdAt), style = MaterialTheme.typography.bodySmall)
+                        movement.reference?.let { Text("ID: " + it, style = MaterialTheme.typography.bodySmall) }
                     }
                 }
             }

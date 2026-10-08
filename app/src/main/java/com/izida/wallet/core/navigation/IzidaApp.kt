@@ -12,6 +12,8 @@ import com.izida.wallet.feature.account.AccountScreen
 import com.izida.wallet.feature.auth.*
 import com.izida.wallet.feature.home.HomeScreen
 import com.izida.wallet.feature.movement.MovementsScreen
+import com.izida.wallet.feature.qr.MyQrScreen
+import com.izida.wallet.feature.qr.ScanQrScreen
 
 private object Routes {
     const val WELCOME = "welcome"
@@ -24,6 +26,8 @@ private object Routes {
     const val MOVEMENTS = "movements"
     const val SECURITY = "security"
     const val SEND = "send"
+    const val MY_QR = "my_qr"
+    const val SCAN_QR = "scan_qr"
 }
 
 @Composable
@@ -78,6 +82,8 @@ fun IzidaApp() {
             HomeScreen(
                 onAccount = { navController.navigate(Routes.ACCOUNT) },
                 onSend = { navController.navigate(Routes.SEND) },
+                onReceive = { navController.navigate(Routes.MY_QR) },
+                onScanQr = { navController.navigate(Routes.SCAN_QR) },
                 onSecurity = { navController.navigate(Routes.SECURITY) }
             )
         }
@@ -99,6 +105,12 @@ fun IzidaApp() {
                 directory = recipientDirectory,
                 onBack = { navController.popBackStack() }
             )
+        }
+        composable(Routes.MY_QR) {
+            MyQrScreen(onBack = { navController.popBackStack() })
+        }
+        composable(Routes.SCAN_QR) {
+            ScanQrScreen(onBack = { navController.popBackStack() })
         }
         composable(Routes.SECURITY) {
             SecurityCenterScreen(

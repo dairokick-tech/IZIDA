@@ -23,6 +23,7 @@ class AuthService {
         val hash = hash(pin, salt)
 
         Database.connection().use { c ->
+            c.autoCommit = false
             c.prepareStatement(
                 "INSERT INTO izida_users(id,full_name,phone,pin_salt,pin_hash) VALUES (?,?,?,?,?)"
             ).use { s ->

@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @Serializable data class LoginRequest(val phone:String,val pin:String)
+@Serializable data class RegisterRequest(val fullName:String,val phone:String,val pin:String)
 @Serializable data class LoginResponse(val userId:String,val fullName:String,val phone:String,val token:String)
 @Serializable data class AccountResponse(val id:String,val userId:String,val currency:String,val status:String,val balance:String)
 @Serializable data class MovementResponse(val id:String,val transactionId:String,val type:String,val amount:String,val currency:String,val createdAt:String,val reference:String?)
@@ -16,6 +17,8 @@ import kotlinx.coroutines.withContext
 class IzidaApi(private val baseUrl:String, private val json:Json=Json{ignoreUnknownKeys=true}) {
     @Volatile private var bearerToken:String?=null
     fun setToken(token:String?) { bearerToken=token }
+    suspend fun register(fullName:String,phone:String,pin:String):LoginResponse =
+        json.decodeFromString(post("/api/v1/auth/register", json.encodeToString(RegisterRequest(fullName,phone,pin))))
     suspend fun login(phone:String,pin:String):LoginResponse =
         json.decodeFromString(post("/api/v1/auth/login", json.encodeToString(LoginRequest(phone,pin))))
     suspend fun getMyAccount():AccountResponse = json.decodeFromString(get("/api/v1/me/account"))

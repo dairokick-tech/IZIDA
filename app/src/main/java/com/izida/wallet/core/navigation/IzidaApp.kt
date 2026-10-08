@@ -5,7 +5,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.izida.wallet.core.security.AuthSession
-import com.izida.wallet.data.account.DemoAccountRepository
 import com.izida.wallet.data.account.RemoteAccountRepository
 import com.izida.wallet.data.remote.IzidaApi
 import com.izida.wallet.feature.transfer.SendMoneyScreen
@@ -16,6 +15,7 @@ import com.izida.wallet.feature.movement.MovementsScreen
 import com.izida.wallet.feature.qr.MyQrScreen
 import com.izida.wallet.feature.qr.ScanQrScreen
 import com.izida.wallet.feature.qr.QrPaymentScreen
+import com.izida.wallet.domain.qr.IzidaQrPayload
 
 private object Routes {
     const val WELCOME = "welcome"
@@ -42,6 +42,7 @@ fun IzidaApp() {
     val remoteRepository = remember { RemoteAccountRepository(api) }
     var pendingName by remember { mutableStateOf("") }
     var pendingPhone by remember { mutableStateOf("") }
+    var qrPayload by remember { mutableStateOf<IzidaQrPayload?>(null) }
     var sessionChecked by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
@@ -150,13 +151,18 @@ fun IzidaApp() {
             )
         }
         composable(Routes.MY_QR) {
-            MyQrScreen(onBack = { navController.popBackStack() })
+            MyQrScreen(api = api, onBack = { navController.popBackStack() })
         }
         composable(Routes.SCAN_QR) {
             ScanQrScreen(
                 onBack = { navController.popBackStack() },
-                onPay = { navController.navigate(Routes.QR_PAYMENT) }
+                onPay = { payload -> qrPayload = payload; navController.navigate(Routes.QR_PAYMENT) }
             )
+        }
+        composable(Routes.QR_PAYMENT) {
+            val payload = qrPayload
+            if (payload == null) navController.popBackStack()
+            else QrPaymentScreen(api = api, payload = payload, onBack = { navController.popBackStack() })
         }
         composable(Routes.SECURITY) {
             SecurityCenterScreen(

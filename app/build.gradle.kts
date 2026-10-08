@@ -7,14 +7,19 @@ plugins {
 android {
     namespace = "com.izida.wallet"
     compileSdk = 35
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
     defaultConfig {
         applicationId = "com.izida.wallet"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "0.1.0"
+        val apiBaseUrl = providers.gradleProperty("IZIDA_API_BASE_URL").orElse("http://10.0.2.2:8080").get()
+        buildConfigField("String", "IZIDA_API_BASE_URL", "\"$apiBaseUrl\"")
     }
-    buildFeatures { compose = true }
     packaging {
         resources { excludes += "/META-INF/{AL2.0,LGPL2.1}" }
     }
@@ -35,6 +40,7 @@ dependencies {
     implementation("androidx.camera:camera-lifecycle:1.4.1")
     implementation("androidx.camera:camera-view:1.4.1")
     implementation("com.google.mlkit:barcode-scanning:17.3.0")
+    implementation("com.google.zxing:core:3.5.3")
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     debugImplementation("androidx.compose.ui:ui-tooling")

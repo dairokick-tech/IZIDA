@@ -1,13 +1,18 @@
 package com.izida.wallet.feature.qr
 
+import android.graphics.Bitmap
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.MultiFormatWriter
+import com.google.zxing.common.BitMatrix
 import com.izida.wallet.data.remote.IzidaApi
 import com.izida.wallet.domain.qr.IzidaQrPayload
-import kotlinx.coroutines.launch
 
 @Composable
 fun MyQrScreen(api: IzidaApi, onBack: () -> Unit) {
@@ -29,12 +34,12 @@ fun MyQrScreen(api: IzidaApi, onBack: () -> Unit) {
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(20.dp)) {
                     Text("Código de pago IZIDA", style = MaterialTheme.typography.titleLarge)
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(16.dp))
+                    IzidaQrImage(payload.encode())
+                    Spacer(Modifier.height(16.dp))
                     Text(it.fullName)
                     Text("Cuenta: " + it.id, style = MaterialTheme.typography.bodySmall)
                     Text("Moneda: " + it.currency, style = MaterialTheme.typography.bodySmall)
-                    Spacer(Modifier.height(12.dp))
-                    Text(payload.encode(), style = MaterialTheme.typography.bodySmall)
                     Spacer(Modifier.height(12.dp))
                     Text("Este QR identifica tu cuenta IZIDA. El pago se procesa en el backend.")
                 }
@@ -48,11 +53,39 @@ fun MyQrScreen(api: IzidaApi, onBack: () -> Unit) {
 }
 
 @Composable
+private fun IzidaQrImage(value: String) {
+    val bitmap = remember(value) {
+        runCatching {
+            val matrix: BitMatrix = MultiFormatWriter().encode(value, BarcodeFormat.QR_CODE, 720, 720)
+            val bitmap = Bitmap.createBitmap(matrix.width, matrix.height, Bitmap.Config.ARGB_8888)
+            for (x in 0 until matrix.width) {
+                for (y in 0 until matrix.height) {
+                    bitmap.setPixel(x, y, if (matrix[x, y]) android.graphics.Color.BLACK else android.graphics.Color.WHITE)
+                }
+            }
+            bitmap
+        }.getOrNull()
+    }
+    bitmap?.let {
+        Image(
+            bitmap = it.asImageBitmap(),
+            contentDescription = "Código QR de IZIDA",
+            modifier = Modifier.fillMaxWidth().aspectRatio(1f)
+        )
+    }
+}
+
+@Composable
 fun ScanQrScreen(onBack: () -> Unit, onPay: (IzidaQrPayload) -> Unit) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     var hasCameraPermission by remember {
-        mutableStateOf(androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.CAMERA) == android.content.pm.PackageManager.PERMISSION_GRANTED)
+        mutableStateOf(
+            androidx.core.content.ContextCompat.checkSelfPermission(
+                context,
+                android.Manifest.permission.CAMERA
+            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        )
     }
     val permissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
         androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
@@ -71,7 +104,11 @@ fun ScanQrScreen(onBack: () -> Unit, onPay: (IzidaQrPayload) -> Unit) {
                 modifier = Modifier.fillMaxWidth()
             ) { Text("Permitir cámara") }
         } else {
-            val cameraProviderFuture = androidx.camera.lifecycle.ProcessCameraProvider.getInstance(context)
+            val cameraProviderFuture = remember(context) {
+                androidx.camera.lifecycle.ProcessCameraProvider.getInstance(context)
+            }
+            var handled by remember { mutableStateOf(false) }
+
             AndroidView(
                 modifier = Modifier.fillMaxWidth().height(420.dp),
                 factory = { ctx ->
@@ -85,25 +122,39 @@ fun ScanQrScreen(onBack: () -> Unit, onPay: (IzidaQrPayload) -> Unit) {
                         val analysis = androidx.camera.core.ImageAnalysis.Builder()
                             .setBackpressureStrategy(androidx.camera.core.ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                             .build()
+
                         analysis.setAnalyzer(androidx.core.content.ContextCompat.getMainExecutor(ctx)) { imageProxy ->
                             val mediaImage = imageProxy.image
-                            if (mediaImage != null) {
-                                val image = com.google.mlkit.vision.common.InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
-                                scanner.process(image)
-                                    .addOnSuccessListener { codes ->
-                                        val value = codes.firstOrNull()?.rawValue
-                                        if (value != null) {
-                                            val decoded = IzidaQrPayload.decode(value)
-                                            if (decoded != null) onPay(decoded)
-                                        }
-                                    }
-                                    .addOnCompleteListener { imageProxy.close() }
-                            } else imageProxy.close()
+                            if (mediaImage == null) {
+                                imageProxy.close()
+                                return@setAnalyzer
+                            }
+                            val image = com.google.mlkit.vision.common.InputImage.fromMediaImage(
+                                mediaImage,
+                                imageProxy.imageInfo.rotationDegrees
+                            )
+                            scanner.process(image)
+                                .addOnSuccessListener { codes ->
+                                    if (handled) return@addOnSuccessListener
+                                    val value = codes.firstOrNull()?.rawValue ?: return@addOnSuccessListener
+                                    val decoded = IzidaQrPayload.decode(value) ?: return@addOnSuccessListener
+                                    handled = true
+                                    onPay(decoded)
+                                }
+                                .addOnCompleteListener { imageProxy.close() }
                         }
+
                         try {
                             provider.unbindAll()
-                            provider.bindToLifecycle(lifecycleOwner, androidx.camera.core.CameraSelector.DEFAULT_BACK_CAMERA, preview, analysis)
-                        } catch (_: Exception) {}
+                            provider.bindToLifecycle(
+                                lifecycleOwner,
+                                androidx.camera.core.CameraSelector.DEFAULT_BACK_CAMERA,
+                                preview,
+                                analysis
+                            )
+                        } catch (_: Exception) {
+                            analysis.clearAnalyzer()
+                        }
                     }, androidx.core.content.ContextCompat.getMainExecutor(ctx))
                     previewView
                 }

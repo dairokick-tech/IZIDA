@@ -33,7 +33,7 @@ fun Application.module() {
             if(result==null) call.respond(HttpStatusCode.Unauthorized,mapOf("error" to "Credenciales invalidas"))
             else call.respond(LoginResponse(result.user.id.toString(),result.user.fullName,result.user.phone,result.token))
         }
-        accountRoutes(accountRepository)
+        accountRoutes(accountRepository, authService)
         get("/health") {
             call.respond(
                 HttpStatusCode.OK,

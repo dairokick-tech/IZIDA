@@ -8,6 +8,8 @@ import androidx.compose.ui.unit.dp
 import com.izida.wallet.data.ledger.InMemoryLedger
 import com.izida.wallet.domain.ledger.TransactionService
 import com.izida.wallet.domain.qr.IzidaQrPayload
+import com.izida.wallet.domain.receipt.PaymentReceipt
+import com.izida.wallet.feature.receipt.ReceiptScreen
 import java.math.BigDecimal
 import java.util.UUID
 
@@ -23,6 +25,7 @@ fun QrPaymentScreen(
     var amount by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
     var transactionId by remember { mutableStateOf<String?>(null) }
+    var receipt by remember { mutableStateOf<PaymentReceipt?>(null) }
 
     val ledger = remember { InMemoryLedger() }
     val transactionService = remember { TransactionService(ledger) }
@@ -101,6 +104,17 @@ fun QrPaymentScreen(
                         )
                         result.onSuccess {
                             transactionId = it.id
+                            receipt = PaymentReceipt(
+                                transactionId = it.id,
+                                operationType = "QR_PAYMENT",
+                                recipientName = payload!!.displayName,
+                                destinationAccountId = payload!!.accountId,
+                                amount = amount.toBigDecimal(),
+                                currency = payload!!.currency,
+                                status = it.status.name,
+                                createdAt = it.createdAt,
+                                reference = it.reference
+                            )
                             step = PaymentStep.RESULT
                         }.onFailure {
                             error = it.message ?: "No se pudo procesar el pago."
@@ -115,13 +129,8 @@ fun QrPaymentScreen(
             }
 
             PaymentStep.RESULT -> {
-                Text("Pago procesado", style = MaterialTheme.typography.titleLarge)
-                Spacer(Modifier.height(12.dp))
-                Text("ID de operación: " + transactionId)
-                Text("Monto: PEN " + amount)
-                Spacer(Modifier.height(18.dp))
-                Button(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
-                    Text("Finalizar")
+                receipt?.let { currentReceipt ->
+                    ReceiptScreen(receipt = currentReceipt, onBack = onBack)
                 }
             }
         }

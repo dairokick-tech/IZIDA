@@ -12,7 +12,7 @@ import java.util.Locale
 @Composable
 fun AccountScreen(
     repository: AccountRepository,
-    userId: String = "USR-DEMO-000001",
+    userId: String = "AUTHENTICATED",
     onMovements: () -> Unit,
     onBack: () -> Unit
 ) {

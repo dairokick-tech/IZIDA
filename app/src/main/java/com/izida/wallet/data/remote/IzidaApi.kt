@@ -18,8 +18,8 @@ class IzidaApi(private val baseUrl:String, private val json:Json=Json{ignoreUnkn
     fun setToken(token:String?) { bearerToken=token }
     suspend fun login(phone:String,pin:String):LoginResponse =
         json.decodeFromString(post("/api/v1/auth/login", json.encodeToString(LoginRequest(phone,pin))))
-    suspend fun getAccount(accountId:String):AccountResponse = json.decodeFromString(get("/api/v1/accounts/$accountId"))
-    suspend fun getMovements(accountId:String,limit:Int=50):List<MovementResponse> = json.decodeFromString(get("/api/v1/accounts/$accountId/movements?limit=$limit"))
+    suspend fun getMyAccount():AccountResponse = json.decodeFromString(get("/api/v1/me/account"))
+    suspend fun getMyMovements(limit:Int=50):List<MovementResponse> = json.decodeFromString(get("/api/v1/me/account/movements?limit=$limit"))
 
     private suspend fun get(path:String):String = request("GET",path,null)
     private suspend fun post(path:String,body:String):String = request("POST",path,body)

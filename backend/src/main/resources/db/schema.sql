@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS accounts (
     id UUID PRIMARY KEY,
-    user_id UUID NOT NULL,
+    user_id UUID NOT NULL UNIQUE REFERENCES izida_users(id),
     currency CHAR(3) NOT NULL,
     status VARCHAR(20) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),

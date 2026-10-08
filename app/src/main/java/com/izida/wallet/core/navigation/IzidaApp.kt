@@ -6,6 +6,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.izida.wallet.core.security.AuthSession
 import com.izida.wallet.data.account.DemoAccountRepository
+import com.izida.wallet.data.account.RemoteAccountRepository
+import com.izida.wallet.data.remote.IzidaApi
 import com.izida.wallet.data.ledger.InMemoryLedger
 import com.izida.wallet.data.movement.LedgerMovementRepository
 import com.izida.wallet.data.transfer.DemoRecipientDirectory
@@ -40,6 +42,7 @@ fun IzidaApp() {
     val session = remember { AuthSession() }
     val ledger = remember { InMemoryLedger() }
     val accountRepository = remember(ledger) { LedgerMovementRepository(ledger) }
+    val remoteRepository = remember { RemoteAccountRepository(IzidaApi("http://10.0.2.2:8080")) }
     val recipientDirectory = remember { DemoRecipientDirectory() }
 
     NavHost(navController = navController, startDestination = Routes.WELCOME) {
@@ -90,19 +93,20 @@ fun IzidaApp() {
                 onReceive = { navController.navigate(Routes.MY_QR) },
                 onScanQr = { navController.navigate(Routes.SCAN_QR) },
                 onSecurity = { navController.navigate(Routes.SECURITY) },
-                ledger = ledger
+                repository = remoteRepository
             )
         }
         composable(Routes.ACCOUNT) {
             AccountScreen(
-                repository = accountRepository,
+                repository = remoteRepository,
                 onMovements = { navController.navigate(Routes.MOVEMENTS) },
                 onBack = { navController.popBackStack() }
             )
         }
         composable(Routes.MOVEMENTS) {
             MovementsScreen(
-                repository = accountRepository,
+                repository = remoteRepository,
+                accountId = "00000000-0000-0000-0000-000000000001",
                 onBack = { navController.popBackStack() }
             )
         }

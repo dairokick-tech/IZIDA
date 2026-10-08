@@ -17,6 +17,7 @@ private enum class PaymentStep { SCAN, AMOUNT, CONFIRM, RESULT }
 
 @Composable
 fun QrPaymentScreen(
+    ledger: com.izida.wallet.domain.ledger.Ledger,
     onBack: () -> Unit
 ) {
     var step by remember { mutableStateOf(PaymentStep.SCAN) }
@@ -27,8 +28,7 @@ fun QrPaymentScreen(
     var transactionId by remember { mutableStateOf<String?>(null) }
     var receipt by remember { mutableStateOf<PaymentReceipt?>(null) }
 
-    val ledger = remember { InMemoryLedger() }
-    val transactionService = remember { TransactionService(ledger) }
+    val transactionService = remember(ledger) { TransactionService(ledger) }
 
     Column(Modifier.fillMaxSize().padding(24.dp)) {
         TextButton(onClick = onBack) { Text("← Volver") }

@@ -48,6 +48,26 @@ fun IzidaApp() {
     val recipientDirectory = remember { DemoRecipientDirectory() }
     var pendingName by remember { mutableStateOf("") }
     var pendingPhone by remember { mutableStateOf("") }
+    var sessionChecked by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        val savedToken = session.getToken()
+        if (savedToken != null) {
+            api.setToken(savedToken)
+            val valid = runCatching { api.getMyAccount(); true }.getOrDefault(false)
+            if (valid) {
+                navController.navigate(Routes.HOME) {
+                    popUpTo(Routes.WELCOME) { inclusive = true }
+                }
+            } else {
+                api.setToken(null)
+                session.end()
+            }
+        }
+        sessionChecked = true
+    }
+
+    if (!sessionChecked) return
 
     NavHost(navController = navController, startDestination = Routes.WELCOME) {
         composable(Routes.WELCOME) {

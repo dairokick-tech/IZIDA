@@ -10,7 +10,6 @@ import com.izida.wallet.data.account.RemoteAccountRepository
 import com.izida.wallet.data.remote.IzidaApi
 import com.izida.wallet.data.ledger.InMemoryLedger
 import com.izida.wallet.data.movement.LedgerMovementRepository
-import com.izida.wallet.data.transfer.DemoRecipientDirectory
 import com.izida.wallet.feature.transfer.SendMoneyScreen
 import com.izida.wallet.feature.account.AccountScreen
 import com.izida.wallet.feature.auth.*
@@ -45,7 +44,6 @@ fun IzidaApp() {
     val accountRepository = remember(ledger) { LedgerMovementRepository(ledger) }
     val api = remember { IzidaApi("http://10.0.2.2:8080") }
     val remoteRepository = remember { RemoteAccountRepository(api) }
-    val recipientDirectory = remember { DemoRecipientDirectory() }
     var pendingName by remember { mutableStateOf("") }
     var pendingPhone by remember { mutableStateOf("") }
     var sessionChecked by remember { mutableStateOf(false) }
@@ -151,8 +149,7 @@ fun IzidaApp() {
         }
         composable(Routes.SEND) {
             SendMoneyScreen(
-                directory = recipientDirectory,
-                ledger = ledger,
+                api = api,
                 onBack = { navController.popBackStack() }
             )
         }

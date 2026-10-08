@@ -15,7 +15,7 @@ import java.util.Locale
 @Composable
 fun MovementsScreen(
     repository: AccountRepository,
-    accountId: String = "ACC-DEMO-000001",
+    accountId: String = "AUTHENTICATED",
     onBack: () -> Unit
 ) {
     var movements by remember { mutableStateOf<List<Movement>>(emptyList()) }

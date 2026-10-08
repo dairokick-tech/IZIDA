@@ -18,6 +18,9 @@ class InMemoryLedger : Ledger {
             }
     }
 
+    override fun entriesFor(accountId: String): List<LedgerEntry> =
+        entries.values.filter { it.accountId == accountId }.sortedByDescending { it.createdAt }
+
     override fun findByIdempotencyKey(key: String): FinancialTransaction? =
         transactions.values.firstOrNull { it.idempotencyKey == key }
 

@@ -89,7 +89,8 @@ fun IzidaApp() {
                 onSend = { navController.navigate(Routes.SEND) },
                 onReceive = { navController.navigate(Routes.MY_QR) },
                 onScanQr = { navController.navigate(Routes.SCAN_QR) },
-                onSecurity = { navController.navigate(Routes.SECURITY) }
+                onSecurity = { navController.navigate(Routes.SECURITY) },
+                ledger = ledger
             )
         }
         composable(Routes.ACCOUNT) {

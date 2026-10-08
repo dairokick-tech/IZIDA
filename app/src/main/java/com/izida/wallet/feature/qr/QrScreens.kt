@@ -49,35 +49,65 @@ fun MyQrScreen(api: IzidaApi, onBack: () -> Unit) {
 
 @Composable
 fun ScanQrScreen(onBack: () -> Unit, onPay: (IzidaQrPayload) -> Unit) {
-    var raw by remember { mutableStateOf("") }
-    var error by remember { mutableStateOf<String?>(null) }
-    var payload by remember { mutableStateOf<IzidaQrPayload?>(null) }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    var hasCameraPermission by remember {
+        mutableStateOf(androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.CAMERA) == android.content.pm.PackageManager.PERMISSION_GRANTED)
+    }
+    val permissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+    ) { granted -> hasCameraPermission = granted }
 
     Column(Modifier.fillMaxSize().padding(24.dp)) {
         TextButton(onClick = onBack) { Text("← Volver") }
         Text("Escanear QR", style = MaterialTheme.typography.headlineMedium)
+        Spacer(Modifier.height(12.dp))
+        Text("Apunta la cámara al código QR de IZIDA.")
         Spacer(Modifier.height(16.dp))
-        Text("Valida un QR IZIDA. La cámara se incorporará sin cambiar el flujo financiero.")
-        Spacer(Modifier.height(12.dp))
-        OutlinedTextField(value = raw,onValueChange = { raw = it; error = null },label = { Text("Payload QR") },modifier = Modifier.fillMaxWidth())
-        Spacer(Modifier.height(12.dp))
-        Button(onClick = {
-            payload = IzidaQrPayload.decode(raw)
-            error = if (payload == null) "QR IZIDA no válido." else null
-        },modifier = Modifier.fillMaxWidth()) { Text("Validar QR") }
-        payload?.let {
-            Spacer(Modifier.height(20.dp))
-            Card(Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(20.dp)) {
-                    Text("Destinatario")
-                    Text(it.displayName,style=MaterialTheme.typography.titleLarge)
-                    Text("Cuenta: "+it.accountId)
-                    Text("Moneda: "+it.currency)
-                    Spacer(Modifier.height(12.dp))
-                    Button(onClick={ onPay(it) },modifier=Modifier.fillMaxWidth()){ Text("Continuar al pago") }
+
+        if (!hasCameraPermission) {
+            Button(
+                onClick = { permissionLauncher.launch(android.Manifest.permission.CAMERA) },
+                modifier = Modifier.fillMaxWidth()
+            ) { Text("Permitir cámara") }
+        } else {
+            val cameraProviderFuture = androidx.camera.lifecycle.ProcessCameraProvider.getInstance(context)
+            AndroidView(
+                modifier = Modifier.fillMaxWidth().height(420.dp),
+                factory = { ctx ->
+                    val previewView = androidx.camera.view.PreviewView(ctx)
+                    cameraProviderFuture.addListener({
+                        val provider = cameraProviderFuture.get()
+                        val preview = androidx.camera.core.Preview.Builder().build().also {
+                            it.surfaceProvider = previewView.surfaceProvider
+                        }
+                        val scanner = com.google.mlkit.vision.barcode.BarcodeScanning.getClient()
+                        val analysis = androidx.camera.core.ImageAnalysis.Builder()
+                            .setBackpressureStrategy(androidx.camera.core.ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                            .build()
+                        analysis.setAnalyzer(androidx.core.content.ContextCompat.getMainExecutor(ctx)) { imageProxy ->
+                            val mediaImage = imageProxy.image
+                            if (mediaImage != null) {
+                                val image = com.google.mlkit.vision.common.InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+                                scanner.process(image)
+                                    .addOnSuccessListener { codes ->
+                                        val value = codes.firstOrNull()?.rawValue
+                                        if (value != null) {
+                                            val decoded = IzidaQrPayload.decode(value)
+                                            if (decoded != null) onPay(decoded)
+                                        }
+                                    }
+                                    .addOnCompleteListener { imageProxy.close() }
+                            } else imageProxy.close()
+                        }
+                        try {
+                            provider.unbindAll()
+                            provider.bindToLifecycle(lifecycleOwner, androidx.camera.core.CameraSelector.DEFAULT_BACK_CAMERA, preview, analysis)
+                        } catch (_: Exception) {}
+                    }, androidx.core.content.ContextCompat.getMainExecutor(ctx))
+                    previewView
                 }
-            }
+            )
         }
-        error?.let { Spacer(Modifier.height(12.dp)); Text(it,color=MaterialTheme.colorScheme.error) }
     }
 }

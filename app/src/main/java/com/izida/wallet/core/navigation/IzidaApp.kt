@@ -93,12 +93,13 @@ fun IzidaApp() {
                 onBack = { navController.popBackStack() },
                 onCompleted = { pin ->
                     runCatching {
-                        val result = kotlinx.coroutines.runBlocking { api.register(pendingName, pendingPhone, pin) }
+                        val result = api.register(pendingName, pendingPhone, pin)
                         api.setToken(result.token)
                         session.start(result.token)
-                    }.onFailure { return@CreatePinScreen }
-                    navController.navigate(Routes.HOME) {
-                        popUpTo(Routes.WELCOME) { inclusive = true }
+                        navController.navigate(Routes.HOME) {
+                            popUpTo(Routes.WELCOME) { inclusive = true }
+                        }
+                        result.token
                     }
                 }
             )

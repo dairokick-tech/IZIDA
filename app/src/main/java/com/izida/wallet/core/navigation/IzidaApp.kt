@@ -6,6 +6,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.izida.wallet.core.security.AuthSession
 import com.izida.wallet.data.account.DemoAccountRepository
+import com.izida.wallet.data.ledger.InMemoryLedger
+import com.izida.wallet.data.movement.LedgerMovementRepository
 import com.izida.wallet.data.transfer.DemoRecipientDirectory
 import com.izida.wallet.feature.transfer.SendMoneyScreen
 import com.izida.wallet.feature.account.AccountScreen
@@ -36,7 +38,8 @@ private object Routes {
 fun IzidaApp() {
     val navController = rememberNavController()
     val session = remember { AuthSession() }
-    val accountRepository = remember { DemoAccountRepository() }
+    val ledger = remember { InMemoryLedger() }
+    val accountRepository = remember(ledger) { LedgerMovementRepository(ledger) }
     val recipientDirectory = remember { DemoRecipientDirectory() }
 
     NavHost(navController = navController, startDestination = Routes.WELCOME) {
@@ -105,6 +108,7 @@ fun IzidaApp() {
         composable(Routes.SEND) {
             SendMoneyScreen(
                 directory = recipientDirectory,
+                ledger = ledger,
                 onBack = { navController.popBackStack() }
             )
         }
@@ -118,7 +122,10 @@ fun IzidaApp() {
             )
         }
         composable(Routes.QR_PAYMENT) {
-            QrPaymentScreen(onBack = { navController.popBackStack() })
+            QrPaymentScreen(
+                ledger = ledger,
+                onBack = { navController.popBackStack() }
+            )
         }
         composable(Routes.SECURITY) {
             SecurityCenterScreen(

@@ -22,6 +22,7 @@ fun QrPaymentScreen(api: IzidaApi, payload: IzidaQrPayload, onBack: () -> Unit) 
     var error by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(false) }
     var receipt by remember { mutableStateOf<PaymentReceipt?>(null) }
+    var idempotencyKey by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
 
     Column(Modifier.fillMaxSize().padding(24.dp)) {
@@ -37,7 +38,7 @@ fun QrPaymentScreen(api: IzidaApi, payload: IzidaQrPayload, onBack: () -> Unit) 
             Spacer(Modifier.height(12.dp))
             Button(onClick={
                 val value=amount.toBigDecimalOrNull()
-                if(value!=null && value>BigDecimal.ZERO && value.scale()<=2) step=PaymentStep.CONFIRM else error="Ingresa un monto válido (máximo 2 decimales)."
+                if(value!=null && value>BigDecimal.ZERO && value.scale()<=2) step=PaymentStep.CONFIRM; idempotencyKey=UUID.randomUUID().toString() else error="Ingresa un monto válido (máximo 2 decimales)."
             },modifier=Modifier.fillMaxWidth()){Text("Continuar")}
         } else if(step==PaymentStep.CONFIRM) {
             Text("Confirmar pago",style=MaterialTheme.typography.titleLarge)
@@ -47,7 +48,7 @@ fun QrPaymentScreen(api: IzidaApi, payload: IzidaQrPayload, onBack: () -> Unit) 
             Button(enabled=!loading,onClick={
                 loading=true; error=null
                 scope.launch {
-                    runCatching { api.payQr(payload.accountId,amount,UUID.randomUUID().toString(),payload.currency) }
+                    runCatching { api.payQr(payload.accountId,amount,idempotencyKey ?: UUID.randomUUID().toString(),payload.currency) }
                         .onSuccess {
                             receipt=PaymentReceipt(it.transactionId,"QR_PAYMENT",payload.displayName,payload.accountId,amount.toBigDecimal(),it.currency,it.status,java.time.Instant.now(),"QR_PAYMENT")
                             step=PaymentStep.RESULT

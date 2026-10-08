@@ -12,7 +12,7 @@ import kotlinx.coroutines.withContext
 @Serializable data class RegisterRequest(val fullName:String,val phone:String,val pin:String)
 @Serializable data class LoginResponse(val userId:String,val fullName:String,val phone:String,val token:String)
 @Serializable data class AccountResponse(val id:String,val userId:String,val currency:String,val status:String,val balance:String,val fullName:String)
-@Serializable data class MovementResponse(val id:String,val transactionId:String,val type:String,val amount:String,val currency:String,val createdAt:String,val reference:String?)
+@Serializable data class MovementResponse(val id:String,val transactionId:String,val type:String,val amount:String,val currency:String,val createdAt:String,val reference:String?,val status:String)
 @Serializable data class TransferRequest(val phone:String,val amount:String,val currency:String="PEN",val idempotencyKey:String,val reference:String?=null)
 @Serializable data class QrTransferRequest(val accountId:String,val amount:String,val currency:String="PEN",val idempotencyKey:String,val reference:String?=null)
 @Serializable data class TransferResponse(val transactionId:String,val amount:String,val currency:String,val status:String)

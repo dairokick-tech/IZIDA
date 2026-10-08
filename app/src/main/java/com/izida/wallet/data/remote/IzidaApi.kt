@@ -15,6 +15,7 @@ import kotlinx.coroutines.withContext
 @Serializable data class MovementResponse(val id:String,val transactionId:String,val type:String,val amount:String,val currency:String,val createdAt:String,val reference:String?)
 @Serializable data class TransferRequest(val phone:String,val amount:String,val currency:String="PEN",val idempotencyKey:String,val reference:String?=null)
 @Serializable data class TransferResponse(val transactionId:String,val amount:String,val currency:String,val status:String)
+@Serializable data class RecipientResponse(val userId:String,val accountId:String,val phone:String,val displayName:String)
 
 class IzidaApi(private val baseUrl:String, private val json:Json=Json{ignoreUnknownKeys=true}) {
     @Volatile private var bearerToken:String?=null
@@ -26,6 +27,7 @@ class IzidaApi(private val baseUrl:String, private val json:Json=Json{ignoreUnkn
     suspend fun getMyAccount():AccountResponse = json.decodeFromString(get("/api/v1/me/account"))
     suspend fun getMyMovements(limit:Int=50):List<MovementResponse> = json.decodeFromString(get("/api/v1/me/account/movements?limit=$limit"))
     suspend fun transfer(phone:String, amount:String, idempotencyKey:String):TransferResponse = json.decodeFromString(post("/api/v1/transfers", json.encodeToString(TransferRequest(phone,amount,"PEN",idempotencyKey,"SEND_MONEY"))))
+    suspend fun findRecipient(phone:String):RecipientResponse = json.decodeFromString(get("/api/v1/recipients/$phone"))
 
     private suspend fun get(path:String):String = request("GET",path,null)
     private suspend fun post(path:String,body:String):String = request("POST",path,body)

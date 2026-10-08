@@ -19,7 +19,10 @@ data class HealthResponse(
 fun Application.module() {
     install(ContentNegotiation) { json() }
 
+    val accountRepository = AccountRepository()
+
     routing {
+        accountRoutes(accountRepository)
         get("/health") {
             call.respond(
                 HttpStatusCode.OK,

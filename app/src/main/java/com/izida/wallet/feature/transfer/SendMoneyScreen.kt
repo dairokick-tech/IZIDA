@@ -18,7 +18,6 @@ private enum class SendStep { RECIPIENT, AMOUNT, CONFIRM, RESULT }
 fun SendMoneyScreen(
     directory: RecipientDirectory,
     ledger: com.izida.wallet.domain.ledger.Ledger,
-    ledger: com.izida.wallet.domain.ledger.Ledger,
     onBack: () -> Unit
 ) {
     var step by remember { mutableStateOf(SendStep.RECIPIENT) }

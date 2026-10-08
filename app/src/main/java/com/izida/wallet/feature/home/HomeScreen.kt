@@ -10,6 +10,8 @@ import androidx.compose.ui.unit.dp
 fun HomeScreen(
     onAccount: () -> Unit = {},
     onSend: () -> Unit = {},
+    onReceive: () -> Unit = {},
+    onScanQr: () -> Unit = {},
     onSecurity: () -> Unit = {}
 ) {
     Column(Modifier.fillMaxSize().padding(24.dp)) {
@@ -32,11 +34,11 @@ fun HomeScreen(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             OutlinedButton(onClick = onSend, modifier = Modifier.weight(1f)) { Text("Enviar") }
-            OutlinedButton(onClick = {}, modifier = Modifier.weight(1f)) { Text("Recibir") }
+            OutlinedButton(onClick = onReceive, modifier = Modifier.weight(1f)) { Text("Recibir") }
         }
 
         Spacer(Modifier.height(12.dp))
-        OutlinedButton(onClick = {}, modifier = Modifier.fillMaxWidth()) {
+        OutlinedButton(onClick = onScanQr, modifier = Modifier.fillMaxWidth()) {
             Text("Escanear QR")
         }
 

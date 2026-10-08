@@ -8,8 +8,6 @@ import com.izida.wallet.core.security.AuthSession
 import com.izida.wallet.data.account.DemoAccountRepository
 import com.izida.wallet.data.account.RemoteAccountRepository
 import com.izida.wallet.data.remote.IzidaApi
-import com.izida.wallet.data.ledger.InMemoryLedger
-import com.izida.wallet.data.movement.LedgerMovementRepository
 import com.izida.wallet.feature.transfer.SendMoneyScreen
 import com.izida.wallet.feature.account.AccountScreen
 import com.izida.wallet.feature.auth.*
@@ -40,8 +38,6 @@ fun IzidaApp() {
     val navController = rememberNavController()
     val context = androidx.compose.ui.platform.LocalContext.current
     val session = remember { AuthSession(context) }
-    val ledger = remember { InMemoryLedger() }
-    val accountRepository = remember(ledger) { LedgerMovementRepository(ledger) }
     val api = remember { IzidaApi("http://10.0.2.2:8080") }
     val remoteRepository = remember { RemoteAccountRepository(api) }
     var pendingName by remember { mutableStateOf("") }
@@ -160,12 +156,6 @@ fun IzidaApp() {
             ScanQrScreen(
                 onBack = { navController.popBackStack() },
                 onPay = { navController.navigate(Routes.QR_PAYMENT) }
-            )
-        }
-        composable(Routes.QR_PAYMENT) {
-            QrPaymentScreen(
-                ledger = ledger,
-                onBack = { navController.popBackStack() }
             )
         }
         composable(Routes.SECURITY) {

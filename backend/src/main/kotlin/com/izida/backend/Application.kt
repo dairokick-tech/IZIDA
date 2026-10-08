@@ -26,6 +26,7 @@ fun Application.module() {
 
     val accountRepository = AccountRepository()
     val authService = AuthService()
+    val transferService = TransferService()
 
     routing {
         post("/api/v1/auth/register") {
@@ -46,6 +47,7 @@ fun Application.module() {
             else call.respond(LoginResponse(result.user.id.toString(),result.user.fullName,result.user.phone,result.token))
         }
         accountRoutes(accountRepository, authService)
+        transferRoutes(authService, transferService)
         get("/health") {
             call.respond(
                 HttpStatusCode.OK,

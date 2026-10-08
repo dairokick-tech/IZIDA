@@ -7,6 +7,7 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.*
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import kotlinx.serialization.Serializable
+import io.ktor.server.request.receive
 import java.time.Instant
 
 @Serializable
@@ -16,12 +17,22 @@ data class HealthResponse(
     val timestamp: String
 )
 
+@Serializable data class LoginRequest(val phone:String,val pin:String)
+@Serializable data class LoginResponse(val userId:String,val fullName:String,val phone:String,val token:String)
+
 fun Application.module() {
     install(ContentNegotiation) { json() }
 
     val accountRepository = AccountRepository()
+    val authService = AuthService()
 
     routing {
+        post("/api/v1/auth/login") {
+            val request=call.receive<LoginRequest>()
+            val result=authService.login(request.phone,request.pin)
+            if(result==null) call.respond(HttpStatusCode.Unauthorized,mapOf("error" to "Credenciales invalidas"))
+            else call.respond(LoginResponse(result.user.id.toString(),result.user.fullName,result.user.phone,result.token))
+        }
         accountRoutes(accountRepository)
         get("/health") {
             call.respond(

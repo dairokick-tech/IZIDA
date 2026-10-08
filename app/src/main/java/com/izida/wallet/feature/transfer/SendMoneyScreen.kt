@@ -17,6 +17,8 @@ private enum class SendStep { RECIPIENT, AMOUNT, CONFIRM, RESULT }
 @Composable
 fun SendMoneyScreen(
     directory: RecipientDirectory,
+    ledger: com.izida.wallet.domain.ledger.Ledger,
+    ledger: com.izida.wallet.domain.ledger.Ledger,
     onBack: () -> Unit
 ) {
     var step by remember { mutableStateOf(SendStep.RECIPIENT) }
@@ -26,8 +28,7 @@ fun SendMoneyScreen(
     var message by remember { mutableStateOf<String?>(null) }
     var transactionId by remember { mutableStateOf<String?>(null) }
 
-    val ledger = remember { InMemoryLedger() }
-    val service = remember { TransactionService(ledger) }
+    val service = remember(ledger) { TransactionService(ledger) }
 
     Column(Modifier.fillMaxSize().padding(24.dp)) {
         TextButton(onClick = onBack) { Text("← Volver") }

@@ -1,24 +1,30 @@
-# IZIDA Backend — Paso 10
+# IZIDA Backend — Paso 11
 
-Foundation for the persistent IZIDA backend.
+API persistente de cuenta respaldada por PostgreSQL.
 
-## Included
+## Endpoints
+- GET /health
+- GET /api/v1/accounts/{accountId}
+- GET /api/v1/accounts/{accountId}/movements?limit=50
 
-- Ktor API service.
-- PostgreSQL driver.
-- HikariCP and Exposed dependencies.
-- Health endpoint: GET /health.
-- PostgreSQL schema for accounts, financial transactions and double-entry ledger entries.
-- Unique idempotency key.
-- Transaction states: PENDING, PROCESSED, REJECTED, REVERSED.
-- Database constraints for positive amounts, currency and account separation.
+El saldo se calcula desde las entradas del ledger de doble partida. El cliente nunca proporciona el saldo.
 
-## Configuration
+## Variables
+Requeridas:
+- DATABASE_URL
+- DATABASE_USER
+- DATABASE_PASSWORD
 
-No credentials are stored in Git. Database configuration must be supplied through environment variables in the next backend integration step.
+Opcionales:
+- DATABASE_POOL_SIZE
+- PORT
 
-## Important
+## Cuenta de desarrollo
+00000000-0000-0000-0000-000000000001
 
-This step establishes the persistent backend boundary and database model. It does not claim that IZIDA is connected to a bank, Yape, Plin or any other external financial participant.
+El seed crea la cuenta con saldo cero. No se fabrica dinero.
 
-The production transfer endpoint must perform balance validation and double-entry posting inside one PostgreSQL transaction, with row locking/serializable isolation, authorization, limits, audit logging and reconciliation.
+## Estado
+Paso 11 crea la primera API de lectura persistente. La app Android todavía conserva su modo local mientras terminamos la configuración de URL, TLS, autenticación y sincronización.
+
+Antes de producción faltan autenticación/autorización, TLS, rate limiting, auditoría, migraciones, reconciliación y el endpoint transaccional de transferencias.

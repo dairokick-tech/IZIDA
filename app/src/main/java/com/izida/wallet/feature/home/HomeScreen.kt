@@ -5,6 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.izida.wallet.domain.ledger.Ledger
 
 @Composable
 fun HomeScreen(
@@ -12,7 +13,8 @@ fun HomeScreen(
     onSend: () -> Unit = {},
     onReceive: () -> Unit = {},
     onScanQr: () -> Unit = {},
-    onSecurity: () -> Unit = {}
+    onSecurity: () -> Unit = {},
+    ledger: Ledger? = null
 ) {
     Column(Modifier.fillMaxSize().padding(24.dp)) {
         Text("IZIDA", style = MaterialTheme.typography.headlineMedium)

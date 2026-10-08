@@ -9,11 +9,11 @@ import java.time.Instant
 
 class RemoteAccountRepository(private val api: IzidaApi):AccountRepository {
     override suspend fun getAccount(userId:String):IzidaAccount {
-        val a=api.getAccount(userId)
+        val a=api.getMyAccount()
         return IzidaAccount(a.id,a.userId,a.currency,a.balance.toBigDecimal(),AccountStatus.valueOf(a.status),Instant.EPOCH)
     }
     override suspend fun getMovements(accountId:String):List<Movement> =
-        api.getMovements(accountId).map {
+        api.getMyMovements().map {
             Movement(it.id,accountId,
                 if(it.type=="CREDIT") MovementType.CREDIT else MovementType.DEBIT,
                 if(it.type=="CREDIT") "Dinero recibido" else "Dinero enviado",

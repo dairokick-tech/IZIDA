@@ -5,8 +5,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.izida.wallet.core.security.AuthSession
+import com.izida.wallet.data.account.DemoAccountRepository
+import com.izida.wallet.feature.account.AccountScreen
 import com.izida.wallet.feature.auth.*
 import com.izida.wallet.feature.home.HomeScreen
+import com.izida.wallet.feature.movement.MovementsScreen
 
 private object Routes {
     const val WELCOME = "welcome"
@@ -15,6 +18,8 @@ private object Routes {
     const val VERIFY_IDENTITY = "verify_identity"
     const val CREATE_PIN = "create_pin"
     const val HOME = "home"
+    const val ACCOUNT = "account"
+    const val MOVEMENTS = "movements"
     const val SECURITY = "security"
 }
 
@@ -22,8 +27,9 @@ private object Routes {
 fun IzidaApp() {
     val navController = rememberNavController()
     val session = remember { AuthSession() }
+    val accountRepository = remember { DemoAccountRepository() }
 
-    NavHost(navController, startDestination = Routes.WELCOME) {
+    NavHost(navController = navController, startDestination = Routes.WELCOME) {
         composable(Routes.WELCOME) {
             WelcomeScreen(
                 onLogin = { navController.navigate(Routes.LOGIN) },
@@ -65,7 +71,23 @@ fun IzidaApp() {
             )
         }
         composable(Routes.HOME) {
-            HomeScreen(onSecurity = { navController.navigate(Routes.SECURITY) })
+            HomeScreen(
+                onAccount = { navController.navigate(Routes.ACCOUNT) },
+                onSecurity = { navController.navigate(Routes.SECURITY) }
+            )
+        }
+        composable(Routes.ACCOUNT) {
+            AccountScreen(
+                repository = accountRepository,
+                onMovements = { navController.navigate(Routes.MOVEMENTS) },
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable(Routes.MOVEMENTS) {
+            MovementsScreen(
+                repository = accountRepository,
+                onBack = { navController.popBackStack() }
+            )
         }
         composable(Routes.SECURITY) {
             SecurityCenterScreen(

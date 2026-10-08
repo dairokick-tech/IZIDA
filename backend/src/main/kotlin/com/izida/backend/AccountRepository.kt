@@ -4,7 +4,7 @@ import java.math.BigDecimal
 import java.util.UUID
 
 data class AccountSnapshot(val id: UUID, val userId: UUID, val currency: String, val status: String, val balance: BigDecimal, val fullName: String)
-data class MovementSnapshot(val id: UUID, val transactionId: UUID, val type: String, val amount: BigDecimal, val currency: String, val createdAt: String, val reference: String?)
+data class MovementSnapshot(val id: UUID, val transactionId: UUID, val type: String, val amount: BigDecimal, val currency: String, val createdAt: String, val reference: String?, val status: String)
 
 class AccountRepository {
     fun findAccount(accountId: UUID): AccountSnapshot? {

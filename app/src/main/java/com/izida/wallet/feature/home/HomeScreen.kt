@@ -7,7 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(onSecurity: () -> Unit = {}) {
     Column(Modifier.fillMaxSize().padding(24.dp)) {
         Text("IZIDA", style = MaterialTheme.typography.headlineMedium)
         Spacer(Modifier.height(24.dp))
@@ -28,7 +28,7 @@ fun HomeScreen() {
         Spacer(Modifier.height(12.dp))
         OutlinedButton(onClick = {}, modifier = Modifier.fillMaxWidth()) { Text("Escanear QR") }
         Spacer(Modifier.height(28.dp))
-        Text("Movimientos recientes", style = MaterialTheme.typography.titleLarge)
+        OutlinedButton(onClick = onSecurity, modifier = Modifier.fillMaxWidth()) { Text("Centro de seguridad") }\n        Spacer(Modifier.height(28.dp))\n        Text("Movimientos recientes", style = MaterialTheme.typography.titleLarge)
         Spacer(Modifier.height(10.dp))
         Text("Todavía no hay movimientos.")
     }

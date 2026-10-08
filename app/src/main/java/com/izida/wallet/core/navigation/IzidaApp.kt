@@ -46,6 +46,8 @@ fun IzidaApp() {
     val api = remember { IzidaApi("http://10.0.2.2:8080") }
     val remoteRepository = remember { RemoteAccountRepository(api) }
     val recipientDirectory = remember { DemoRecipientDirectory() }
+    var pendingName by remember { mutableStateOf("") }
+    var pendingPhone by remember { mutableStateOf("") }
 
     NavHost(navController = navController, startDestination = Routes.WELCOME) {
         composable(Routes.WELCOME) {
@@ -74,6 +76,8 @@ fun IzidaApp() {
             RegisterScreen(
                 onBack = { navController.popBackStack() },
                 onCompleted = { name, phone ->
+                    pendingName = name
+                    pendingPhone = phone
                     navController.navigate(Routes.CREATE_PIN)
                 }
             )
@@ -88,6 +92,11 @@ fun IzidaApp() {
             CreatePinScreen(
                 onBack = { navController.popBackStack() },
                 onCompleted = { pin ->
+                    runCatching {
+                        val result = kotlinx.coroutines.runBlocking { api.register(pendingName, pendingPhone, pin) }
+                        api.setToken(result.token)
+                        session.start(result.token)
+                    }.onFailure { return@CreatePinScreen }
                     navController.navigate(Routes.HOME) {
                         popUpTo(Routes.WELCOME) { inclusive = true }
                     }

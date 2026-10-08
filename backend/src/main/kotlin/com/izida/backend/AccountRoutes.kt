@@ -12,19 +12,15 @@ import java.math.RoundingMode
 fun Route.accountRoutes(repository: AccountRepository, auth: AuthService) {
     route("/api/v1/me") {
         get("/account") {
-            val user = call.requireUser(auth) ?: return@get
-            val a = repository.findAccountByUserId(user.id)
-                ?: return@get call.respond(HttpStatusCode.NotFound, mapOf("error" to "Cuenta no encontrada"))
+            val user=call.requireUser(auth) ?: return@get
+            val a=repository.findAccountByUserId(user.id) ?: return@get call.respond(HttpStatusCode.NotFound,mapOf("error" to "Cuenta no encontrada"))
             call.respond(AccountResponse(a.id.toString(),a.userId.toString(),a.currency,a.status,a.balance.setScale(2,RoundingMode.HALF_UP).toPlainString(),a.fullName))
         }
         get("/account/movements") {
-            val user = call.requireUser(auth) ?: return@get
-            val a = repository.findAccountByUserId(user.id)
-                ?: return@get call.respond(HttpStatusCode.NotFound, mapOf("error" to "Cuenta no encontrada"))
-            val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 50
-            call.respond(repository.movements(a.id,limit).map {
-                MovementResponse(it.id.toString(),it.transactionId.toString(),it.type,it.amount.setScale(2,RoundingMode.HALF_UP).toPlainString(),it.currency,it.createdAt,it.reference,it.status)
-            })
+            val user=call.requireUser(auth) ?: return@get
+            val a=repository.findAccountByUserId(user.id) ?: return@get call.respond(HttpStatusCode.NotFound,mapOf("error" to "Cuenta no encontrada"))
+            val limit=call.request.queryParameters["limit"]?.toIntOrNull() ?: 50
+            call.respond(repository.movements(a.id,limit).map { MovementResponse(it.id.toString(),it.transactionId.toString(),it.type,it.amount.setScale(2,RoundingMode.HALF_UP).toPlainString(),it.currency,it.createdAt,it.reference,it.status) })
         }
     }
 }

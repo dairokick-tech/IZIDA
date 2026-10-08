@@ -5,29 +5,25 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.izida.wallet.data.ledger.InMemoryLedger
-import com.izida.wallet.domain.ledger.TransactionService
-import com.izida.wallet.domain.transfer.Recipient
-import com.izida.wallet.domain.transfer.RecipientDirectory
+import com.izida.wallet.data.remote.IzidaApi
 import java.math.BigDecimal
 import java.util.UUID
+import kotlinx.coroutines.launch
 
 private enum class SendStep { RECIPIENT, AMOUNT, CONFIRM, RESULT }
 
 @Composable
 fun SendMoneyScreen(
-    directory: RecipientDirectory,
-    ledger: com.izida.wallet.domain.ledger.Ledger,
+    api: IzidaApi,
     onBack: () -> Unit
 ) {
     var step by remember { mutableStateOf(SendStep.RECIPIENT) }
     var phone by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
-    var recipient by remember { mutableStateOf<Recipient?>(null) }
     var message by remember { mutableStateOf<String?>(null) }
     var transactionId by remember { mutableStateOf<String?>(null) }
-
-    val service = remember(ledger) { TransactionService(ledger) }
+    var loading by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     Column(Modifier.fillMaxSize().padding(24.dp)) {
         TextButton(onClick = onBack) { Text("← Volver") }
@@ -40,20 +36,17 @@ fun SendMoneyScreen(
                 OutlinedTextField(
                     value = phone,
                     onValueChange = { phone = it.filter(Char::isDigit).take(9) },
-                    label = { Text("Número celular") },
+                    label = { Text("Número celular IZIDA") },
                     placeholder = { Text("9 dígitos") },
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.height(12.dp))
                 Button(
-                    onClick = {
-                        recipient = directory.findByPhone(phone)
-                        message = if (recipient == null) "No se encontró el destinatario." else null
-                        if (recipient != null) step = SendStep.AMOUNT
-                    },
+                    onClick = { message = null; step = SendStep.AMOUNT },
                     enabled = phone.length == 9,
                     modifier = Modifier.fillMaxWidth()
-                ) { Text("Buscar destinatario") }
+                ) { Text("Continuar") }
+                Text("El destinatario se validará al procesar la transferencia.", style = MaterialTheme.typography.bodySmall)
                 message?.let {
                     Spacer(Modifier.height(12.dp))
                     Text(it, color = MaterialTheme.colorScheme.error)
@@ -61,8 +54,7 @@ fun SendMoneyScreen(
             }
 
             SendStep.AMOUNT -> {
-                Text("Destinatario: " + recipient!!.displayName)
-                Text("Teléfono: " + recipient!!.phoneNumber)
+                Text("Destinatario: +51 $phone")
                 Spacer(Modifier.height(16.dp))
                 OutlinedTextField(
                     value = amount,
@@ -73,10 +65,11 @@ fun SendMoneyScreen(
                 Spacer(Modifier.height(12.dp))
                 Button(
                     onClick = {
-                        if ((amount.toBigDecimalOrNull() ?: BigDecimal.ZERO) > BigDecimal.ZERO) {
-                            step = SendStep.CONFIRM
+                        val value = amount.toBigDecimalOrNull()
+                        if (value != null && value > BigDecimal.ZERO && value.scale() <= 2) {
                             message = null
-                        } else message = "Ingresa un monto válido."
+                            step = SendStep.CONFIRM
+                        } else message = "Ingresa un monto válido de hasta 2 decimales."
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) { Text("Continuar") }
@@ -85,27 +78,27 @@ fun SendMoneyScreen(
             SendStep.CONFIRM -> {
                 Text("Confirmar envío", style = MaterialTheme.typography.titleLarge)
                 Spacer(Modifier.height(10.dp))
-                Text("Destinatario: " + recipient!!.displayName)
-                Text("Monto: PEN " + amount)
+                Text("Celular: +51 $phone")
+                Text("Monto: PEN $amount")
                 Spacer(Modifier.height(18.dp))
                 Button(
                     onClick = {
-                        val result = service.transfer(
-                            sourceAccountId = "ACC-DEMO-000001",
-                            destinationAccountId = recipient!!.accountId,
-                            amount = amount.toBigDecimal(),
-                            currency = "PEN",
-                            idempotencyKey = UUID.randomUUID().toString()
-                        )
-                        result.onSuccess {
-                            transactionId = it.id
-                            step = SendStep.RESULT
-                        }.onFailure {
-                            message = it.message
+                        loading = true
+                        message = null
+                        val key = UUID.randomUUID().toString()
+                        scope.launch {
+                            runCatching { api.transfer(phone, amount, key) }
+                                .onSuccess {
+                                    transactionId = it.transactionId
+                                    step = SendStep.RESULT
+                                }
+                                .onFailure { message = it.message ?: "No se pudo procesar la transferencia." }
+                            loading = false
                         }
                     },
+                    enabled = !loading,
                     modifier = Modifier.fillMaxWidth()
-                ) { Text("Confirmar operación") }
+                ) { Text(if (loading) "Procesando…" else "Confirmar operación") }
                 message?.let {
                     Spacer(Modifier.height(12.dp))
                     Text(it, color = MaterialTheme.colorScheme.error)
@@ -115,8 +108,8 @@ fun SendMoneyScreen(
             SendStep.RESULT -> {
                 Text("Operación procesada", style = MaterialTheme.typography.titleLarge)
                 Spacer(Modifier.height(10.dp))
-                Text("ID: " + transactionId)
-                Text("Monto: PEN " + amount)
+                Text("ID: $transactionId")
+                Text("Monto: PEN $amount")
                 Spacer(Modifier.height(18.dp))
                 Button(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
                     Text("Volver al inicio")

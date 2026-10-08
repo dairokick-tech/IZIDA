@@ -53,7 +53,7 @@ class TransferService {
     private data class Account(val id: UUID, val currency: String, val status: String)
 
     private fun findAccount(c: java.sql.Connection, userId: UUID): Account? =
-        c.prepareStatement("SELECT id,currency,status FROM accounts WHERE user_id=? LIMIT 1").use { s ->
+        c.prepareStatement("SELECT id,currency,status FROM accounts WHERE user_id=? LIMIT 1 FOR UPDATE").use { s ->
             s.setObject(1,userId); s.executeQuery().use { rs -> if (rs.next()) Account(rs.getObject("id",UUID::class.java),rs.getString("currency").trim(),rs.getString("status")) else null }
         }
 

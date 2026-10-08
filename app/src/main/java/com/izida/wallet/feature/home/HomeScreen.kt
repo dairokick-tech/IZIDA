@@ -9,6 +9,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun HomeScreen(
     onAccount: () -> Unit = {},
+    onSend: () -> Unit = {},
     onSecurity: () -> Unit = {}
 ) {
     Column(Modifier.fillMaxSize().padding(24.dp)) {
@@ -30,7 +31,7 @@ fun HomeScreen(
             Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            OutlinedButton(onClick = {}, modifier = Modifier.weight(1f)) { Text("Enviar") }
+            OutlinedButton(onClick = onSend, modifier = Modifier.weight(1f)) { Text("Enviar") }
             OutlinedButton(onClick = {}, modifier = Modifier.weight(1f)) { Text("Recibir") }
         }
 

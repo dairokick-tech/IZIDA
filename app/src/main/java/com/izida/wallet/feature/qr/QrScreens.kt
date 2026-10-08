@@ -33,7 +33,7 @@ fun MyQrScreen(onBack: () -> Unit) {
 }
 
 @Composable
-fun ScanQrScreen(onBack: () -> Unit) {
+fun ScanQrScreen(onBack: () -> Unit, onPay: () -> Unit) {
     var raw by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
     var payload by remember { mutableStateOf<IzidaQrPayload?>(null) }
@@ -68,7 +68,11 @@ fun ScanQrScreen(onBack: () -> Unit) {
                     Text("Cuenta: " + it.accountId)
                     Text("Moneda: " + it.currency)
                     Spacer(Modifier.height(12.dp))
-                    Text("El pago se conectará al flujo de confirmación en el siguiente paso.")
+                    Text("El destinatario fue identificado. Puedes continuar al pago.")
+                    Spacer(Modifier.height(12.dp))
+                    Button(onClick = onPay, modifier = Modifier.fillMaxWidth()) {
+                        Text("Continuar al pago")
+                    }
                 }
             }
         }

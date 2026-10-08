@@ -42,4 +42,23 @@ class AccountRepository {
             }
         }
     }
+    fun findAccountByUserId(userId: UUID): AccountSnapshot? {
+        Database.connection().use { c ->
+            c.prepareStatement("""
+                SELECT a.id, a.user_id, a.currency, a.status,
+                COALESCE(SUM(CASE WHEN e.entry_type = 'CREDIT' THEN e.amount
+                                  WHEN e.entry_type = 'DEBIT' THEN -e.amount ELSE 0 END), 0) balance
+                FROM accounts a LEFT JOIN ledger_entries e ON e.account_id = a.id
+                WHERE a.user_id = ? GROUP BY a.id, a.user_id, a.currency, a.status
+                ORDER BY a.created_at ASC LIMIT 1
+            """.trimIndent()).use { s ->
+                s.setObject(1, userId)
+                s.executeQuery().use { rs ->
+                    if (!rs.next()) return null
+                    return AccountSnapshot(rs.getObject("id", UUID::class.java), rs.getObject("user_id", UUID::class.java), rs.getString("currency").trim(), rs.getString("status"), rs.getBigDecimal("balance"))
+                }
+            }
+        }
+    }
+
 }

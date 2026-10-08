@@ -99,6 +99,7 @@ fun IzidaApp() {
         composable(Routes.ACCOUNT) {
             AccountScreen(
                 repository = remoteRepository,
+                userId = "00000000-0000-0000-0000-000000000001",
                 onMovements = { navController.navigate(Routes.MOVEMENTS) },
                 onBack = { navController.popBackStack() }
             )

@@ -6,6 +6,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.izida.wallet.core.security.AuthSession
 import com.izida.wallet.data.account.DemoAccountRepository
+import com.izida.wallet.data.transfer.DemoRecipientDirectory
+import com.izida.wallet.feature.transfer.SendMoneyScreen
 import com.izida.wallet.feature.account.AccountScreen
 import com.izida.wallet.feature.auth.*
 import com.izida.wallet.feature.home.HomeScreen
@@ -21,6 +23,7 @@ private object Routes {
     const val ACCOUNT = "account"
     const val MOVEMENTS = "movements"
     const val SECURITY = "security"
+    const val SEND = "send"
 }
 
 @Composable
@@ -28,6 +31,7 @@ fun IzidaApp() {
     val navController = rememberNavController()
     val session = remember { AuthSession() }
     val accountRepository = remember { DemoAccountRepository() }
+    val recipientDirectory = remember { DemoRecipientDirectory() }
 
     NavHost(navController = navController, startDestination = Routes.WELCOME) {
         composable(Routes.WELCOME) {
@@ -73,6 +77,7 @@ fun IzidaApp() {
         composable(Routes.HOME) {
             HomeScreen(
                 onAccount = { navController.navigate(Routes.ACCOUNT) },
+                onSend = { navController.navigate(Routes.SEND) },
                 onSecurity = { navController.navigate(Routes.SECURITY) }
             )
         }
@@ -86,6 +91,12 @@ fun IzidaApp() {
         composable(Routes.MOVEMENTS) {
             MovementsScreen(
                 repository = accountRepository,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable(Routes.SEND) {
+            SendMoneyScreen(
+                directory = recipientDirectory,
                 onBack = { navController.popBackStack() }
             )
         }
